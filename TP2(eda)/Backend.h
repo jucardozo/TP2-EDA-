@@ -10,9 +10,9 @@ struct Floor			// this struct will save all the information of floor
 {
 	int height;			
 	int width;
-	int* clean;			//
-	RobotCollection robots;
-	double time_to_clean;
+	int* clean;					//will save  the memory segment location
+	RobotCollection robots;		//will save all the information of the robots such as the amount ,position,etc
+	double time_to_clean;		
 };
 struct RobotCollection
 {
