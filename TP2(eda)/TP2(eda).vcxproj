@@ -141,6 +141,9 @@
   <ItemGroup>
     <ClInclude Include="Backend.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Backend.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
