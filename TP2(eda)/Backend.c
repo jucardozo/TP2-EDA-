@@ -11,7 +11,7 @@ void generateRobots(struct Floor*, int ammount);
 
 
 
-void* createFloor(Floor* floor_p, int height, int widht, int robots_amount) {
+void* createFloor(struct Floor* floor_p, int height, int widht, int robots_amount) {
 	floor_p->clean = malloc((height * widht) * sizeof(int));				//an order is placed for a memory segment
 	if (floor_p->clean != NULL) { 							//if returns NULL then the memory segment could not be allocated,otherwise it will contain the segment address
 		floor_p->height = height;
@@ -25,6 +25,6 @@ void* createFloor(Floor* floor_p, int height, int widht, int robots_amount) {
 }
 
 
-void destroyFloor(Floor* floor_p){
+void destroyFloor(struct Floor* floor_p){
 	free(floor_p->clean);
 }
