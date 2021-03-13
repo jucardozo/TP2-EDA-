@@ -1,16 +1,114 @@
 #include <stdlib.h>				//this library includes malloc
+#include <string.h>				/* strcmp */
 #include <time.h>
 
+#include "lib/libparse/libparse.h"
 #include "Backend.h"
 #include "Robots.h"
+
 /**********************PROTOTYPES******************/
 void* createFloor(struct Floor*, int height, int widht, int robots_amount);			// this funtion returns NULL in case it fails to allocate the memory segment
-
 void destroyFloor(struct Floor*);
+static void printHelp(void);
 
+struct cmdData {
+	int width;
+	int height;
+	int robots_number;
+	int mode;
+};
 
+int
+initBackend(int argc, char* argv[], 
+	statusCallback publishStatus, void* frontdata) {
 
+	// Verify valid input
+	if (argc < 1) {
+		return FAILURE;
+	}
+	else if (argv == NULL) {
+		return FAILURE;
+	}
+	else if (publishStatus == NULL) {
+		return FAILURE;
+	}
+	else if (frontdata == NULL) {
+		return FAILURE;
+	}
 
+	struct cmdData command_line_input = { 0 };
+	if (parseCmdLine(argc, argv, parseCallback, &command_line_input) == PARSECMD_FAIL) {
+		printHelp();
+		return FAILURE;
+	}
+	else if(command_line_input.mode = 1) { // TODO
+		runModeOne(command_line_input.robots_number, command_line_input.width, command_line_input.height);
+	}
+	else if (command_line_input.mode = 2) { // TODO
+		runModeTwo(command_line_input.width, command_line_input.height);
+	}
+
+	return SUCCESS;
+}
+
+int parseCallback(char* key, char* value, void* userData) {
+	if (userData == NULL) return PARAMS_INVALID;
+	
+	struct cmdData* args_storage = (struct cmdData*) userData;
+
+	// Parameter
+	if (key == NULL) {
+		return PARAMS_INVALID;
+	}
+	// Key-value pair
+	if (!strcmp(key, "Mode")) {
+		switch (atoi(value)) {
+			case 1:
+				args_storage->mode = 1;
+				break;
+			case 2:
+				args_storage->mode = 2;
+				break;
+			default:
+				printf("Invalid mode.\n");
+				return PARAMS_INVALID;
+				break;
+			}
+	}
+	else if (!strcmp(key, "Robots")) {
+		if (is_data_numeric(value) != NULL) {
+			args_storage->robots_number = atoi(value);
+		}
+		else {
+			printf("Invalid number of robots.\n");
+			return PARAMS_INVALID;
+		}
+	}
+	else if (!strcmp(key, "Height")) {
+		if (is_data_numeric(value) != NULL 
+			&& atoi(value) <= FLOOR_HEIGHT) {
+			args_storage->height = atoi(value);
+		}
+		else {
+			printf("Invalid board height.\n");
+			return PARAMS_INVALID;
+		}
+	}
+	else if (!strcmp(key, "Width")) {
+		if (is_data_numeric(value) != NULL 
+			&& atoi(value) <= FLOOR_WIDTH) {
+				args_storage->width = atoi(value);
+		}
+		else {
+			printf("Invalid board width.\n");
+			return PARAMS_INVALID;
+		}
+	}
+	else {
+		return PARAMS_INVALID;
+	}
+	return PARAMS_VALID;
+}
 
 
 void* createFloor(struct Floor* floor_p, int height, int widht, int robots_amount) {
@@ -45,4 +143,23 @@ void* createFloor(struct Floor* floor_p, int height, int widht, int robots_amoun
 
 void destroyFloor(struct Floor* floor_p){
 	free(floor_p->clean);
+}
+
+static void printHelp(void) {
+	putchar('\n');
+	printf("==== Usage ====\n");
+	printf("Key\tValue\n");
+
+	printf("-Mode\t1 or 2.\n");
+	printf("\t1: Given a number of robots, perform a real-time cleaning of the floor.\n");
+	printf("\t2: Simulate 1000 times the ammount of time needed to clean the floor using N robots.\n");
+	printf("\t   Stops when the time elapsed between N and N-1 is less than 0.1 seconds.\n");
+
+	printf("-Robots\tNumber of robots to use at the same time.\n");
+	printf("\tOnly used in mode 1; ignored in mode 2.\n");
+
+	printf("-Width\tFloor witdh.\n");
+	printf("\tInteger greater or equal than zero.\n");
+	printf("-Height\tFloor height\n");
+	printf("\tInteger greater or equal than zero.\n");
 }

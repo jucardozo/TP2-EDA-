@@ -140,10 +140,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Backend.h" />
+    <ClInclude Include="lib\libparse\libparse.h" />
     <ClInclude Include="Robots.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Backend.c" />
+    <ClCompile Include="lib\libparse\libparse.c" />
     <ClCompile Include="Robots.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

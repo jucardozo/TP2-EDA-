@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\lib">
+      <UniqueIdentifier>{89030e97-6897-4341-9f62-68301b7f414e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\lib">
+      <UniqueIdentifier>{1abe9c5d-e4a0-4ffa-8f77-b98a8419a82d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Backend.h">
@@ -21,6 +27,9 @@
     <ClInclude Include="Robots.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lib\libparse\libparse.h">
+      <Filter>Header Files\lib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Backend.c">
@@ -28,6 +37,9 @@
     </ClCompile>
     <ClCompile Include="Robots.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libparse\libparse.c">
+      <Filter>Source Files\lib</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
