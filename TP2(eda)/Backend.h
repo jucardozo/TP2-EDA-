@@ -13,6 +13,22 @@
 /******************** MACROS ********************/
 
 /******************** STRUCTURES AND TYPEDEF ********************/
+struct Position
+{
+	double x;
+	double y;
+};
+struct Robot
+{
+	struct Position coordinates;
+	double angle;
+};
+struct RobotCollection
+{
+	int robots_number;
+	struct Robot* robots;
+};
+
 struct Floor			// this struct will save all the information of floor
 {
 	int height;			
@@ -21,21 +37,6 @@ struct Floor			// this struct will save all the information of floor
 	int clean_size;
 	struct RobotCollection robots;		//will save all the information of the robots such as the amount ,position,etc
 	double time_to_clean;		
-};
- struct RobotCollection
-{
-	int robots_number;
-	struct Robot* robots;
-};
-struct Robot
-{
-	struct Position coordinates;
-	double angle;
-};
-struct Position
-{
-	double x;
-	double y;
 };
 
 typedef int(*statusCallback)(struct Floor*, void*);

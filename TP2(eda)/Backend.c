@@ -1,6 +1,8 @@
-#include "Backend.h"
 #include <stdlib.h>				//this library includes malloc
+#include <time.h>
 
+#include "Backend.h"
+#include "Robots.h"
 /**********************PROTOTYPES******************/
 void* createFloor(struct Floor*, int height, int widht, int robots_amount);			// this funtion returns NULL in case it fails to allocate the memory segment
 
@@ -13,6 +15,9 @@ void destroyFloor(struct Floor*);
 
 void* createFloor(struct Floor* floor_p, int height, int widht, int robots_amount) {
 	void* pointer;
+	
+    srand(time(NULL)); // For robots :)
+
 	floor_p->clean = malloc((height * widht) * sizeof(int));				//an order is placed for a memory segment
 	if (floor_p->clean != NULL) { 							//if returns NULL then the memory segment could not be allocated,otherwise it will contain the segment address
 		floor_p->height = height;

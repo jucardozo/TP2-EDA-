@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h> /* M_PI, sin(), cos(), isgreaterequal, isless */
-#include <time.h>
 
 #include "Robots.h" /* SUCCESS, FAILURE, Floor, RobotCollection, Robot, Position */
 
@@ -30,9 +29,8 @@ static long int ipow(unsigned int base, unsigned int exponent);
 /******************** PUBLIC FUNCTIONS ********************/
 void* generateRobots(struct Floor* floor_p, int ammount) {
     void* pointer;
-    pointer = malloc(ammount * sizeof(struct Robot);
+    pointer = malloc(ammount * sizeof(struct Robot));
     if (pointer != NULL) {
-        srand(time(0));
         floor_p->robots.robots_number = ammount; // SACAR
         floor_p->robots.robots->coordinates.x = (0 + rand() % ((floor_p->width) + 1));			//a random number is assigned between zero and the maximum width value
         floor_p->robots.robots->coordinates.y = (0 + rand() % ((floor_p->height) + 1));			//a random number is assigned between zero and the maximum height value
@@ -54,10 +52,10 @@ int cleanFloor(struct Floor* floor_p) {
 
     int i = 0;
     while (i < floor_p->robots.robots_number) {
-        int x = floor(floor_p->robots.robots[i].coordinates.x);
-        int y = floor(floor_p->robots.robots[i].coordinates.y);
+        int x = (int) floor(floor_p->robots.robots[i].coordinates.x);
+        int y = (int) floor(floor_p->robots.robots[i].coordinates.y);
 
-        floor_p->clean[x][y] = TILE_CLEAN;
+        floor_p->clean[x][y] = TILE_CLEAN; // TODO
         i++;
     }
     return SUCCESS;
