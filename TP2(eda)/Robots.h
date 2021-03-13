@@ -8,16 +8,16 @@
 /******************** STRUCTURES AND TYPEDEF ********************/
 
 /******************** PROTOTYPES ********************/
-/* TODO
- * 
+/* 
+ * generates a specified number of robots, randomly placing them
  * 
  * Arguments:
- *  floor_p: 
- *  ammount: 
+ *  floor_p:place for generation 
+ *  ammount: number of robots
  * 
  * Returns:
- *  Success: 
- *  Failure: 
+ * Success: allocated memory segment address
+ * Failure: NULL
  */
 void* generateRobots(struct Floor* floor_p, int ammount);
 
