@@ -113,7 +113,6 @@ int parseCallback(char* key, char* value, void* userData) {
 
 void* createFloor(struct Floor* floor_p, int height, int widht, int robots_amount) {
 	void* pointer;
-	
     srand(time(NULL)); // For robots :)
 
 	floor_p->clean = malloc((height * widht) * sizeof(int));				//an order is placed for a memory segment
@@ -122,26 +121,31 @@ void* createFloor(struct Floor* floor_p, int height, int widht, int robots_amoun
 		floor_p->width = widht;
 		floor_p->clean_size = (height*widht);
 		floor_p->time_to_clean = 0;							//initially since the time was not calculated, it is zero
-		if (generateRobots(floor_p, robots_amount) == NULL) {
-			floor_p->clean = NULL;
-			floor_p->height = 0;
-			floor_p->width = 0;
-			floor_p->clean_size = (0);
-			floor_p->time_to_clean = 0;
+		pointer = generateRobots(floor_p, robots_amount);
+		if (pointer == NULL) {							//if it points to null then the robots could not be created
 			return NULL;
+		}
+		else {
+			return floor_p->clean;
 		}
 	}
 	else{												// the main is informed that it failed
-		floor_p->height = 0;
-		floor_p->width = 0;
-		floor_p->clean_size = (0);
-		floor_p->time_to_clean = 0;
+
 		return NULL;
 	}
 }
 
 
 void destroyFloor(struct Floor* floor_p){
+	floor_p->robots.robots_number = 0;
+	floor_p->robots.robots->coordinates.x = 0;
+	floor_p->robots.robots->coordinates.y = 0;
+	floor_p->robots.robots->angle = 0;
+	floor_p->height = 0;
+	floor_p->width = 0;
+	floor_p->clean_size = (0);
+	floor_p->time_to_clean = 0;
+	free(floor_p->robots.robots);
 	free(floor_p->clean);
 }
 

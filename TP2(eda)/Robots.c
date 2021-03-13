@@ -25,23 +25,17 @@
 static double getRandomAngle(void);
 static struct Position* newCoordinates(struct Position* current, double angle, struct Position* new, double module);
 static long int ipow(unsigned int base, unsigned int exponent);
+static void robotsArr(struct Floor* floor_p);
 
 /******************** PUBLIC FUNCTIONS ********************/
 void* generateRobots(struct Floor* floor_p, int ammount) {
-    void* pointer;
-    pointer = malloc(ammount * sizeof(struct Robot));
-    if (pointer != NULL) {
-        floor_p->robots.robots_number = ammount; // SACAR
-        floor_p->robots.robots->coordinates.x = (0 + rand() % ((floor_p->width) + 1));			//a random number is assigned between zero and the maximum width value
-        floor_p->robots.robots->coordinates.y = (0 + rand() % ((floor_p->height) + 1));			//a random number is assigned between zero and the maximum height value
-        floor_p->robots.robots->angle = getRandomAngle();
-        return pointer;
+    floor_p->robots.robots = malloc(ammount * sizeof(struct Robot));
+    if (floor_p->robots.robots != NULL) {
+        floor_p->robots.robots_number = ammount;            
+        robotsArr(floor_p);                          //create a defined number of robots, giving them random position and direction
+        return floor_p->robots.robots;
     }
     else{
-        floor_p->robots.robots_number = 0; // SACAR
-        floor_p->robots.robots->coordinates.x = 0;			//a random number is assigned between zero and the maximum width value
-        floor_p->robots.robots->coordinates.y = 0;			//a random number is assigned between zero and the maximum height value
-        floor_p->robots.robots->angle = 0;
         return NULL;
     }
 }
@@ -55,7 +49,7 @@ int cleanFloor(struct Floor* floor_p) {
         int x = (int) floor(floor_p->robots.robots[i].coordinates.x);
         int y = (int) floor(floor_p->robots.robots[i].coordinates.y);
 
-        floor_p->clean[x][y] = TILE_CLEAN; // TODO
+        //floor_p->clean[x][y] = TILE_CLEAN; // TODO
         i++;
     }
     return SUCCESS;
@@ -256,4 +250,24 @@ static long int ipow(unsigned int base, unsigned int exponent) {
     }
 
     return result;
+}
+
+/*
+*Generates an array of struct robots with a quantity passed by the user.
+* 
+*Each robot has a random position and direction (angle). 
+* 
+*In the case of the angle, it is passed by getRandomAngle
+* 
+*Argument: struct Floor*
+* 
+*Returns: none
+* 
+*/
+static void robotsArr(struct Floor* floor_p) {
+    for (int limit = 0; limit < floor_p->robots.robots_number; limit++) {
+        floor_p->robots.robots[limit].coordinates.x = (0 + rand() % ((floor_p->width) + 1));            //a random number is assigned between zero and the maximum width value
+        floor_p->robots.robots[limit].coordinates.y = (0 + rand() % ((floor_p->height) + 1));           //a random number is assigned between zero and the maximum height value
+        floor_p->robots.robots[limit].angle = getRandomAngle();
+    }
 }
