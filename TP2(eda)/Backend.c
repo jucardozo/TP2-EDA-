@@ -1,6 +1,15 @@
 #include "Backend.h"
 #include <stdlib.h>				//this library includes malloc
 
+/**********************PROTOTYPES******************/
+void* createFloor(struct Floor*, int height, int widht, int robots_amount);			// this funtion returns NULL in case it fails to allocate the memory segment
+
+void destroyFloor(struct Floor*);
+
+void generateRobots(struct Floor*, int ammount);
+
+
+
 
 void* createFloor(Floor* floor_p, int height, int widht, int robots_amount) {
 	floor_p->clean = malloc((height * widht) * sizeof(int));				//an order is placed for a memory segment
