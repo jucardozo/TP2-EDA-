@@ -7,8 +7,7 @@
 #include "Robots.h"
 
 /**********************PROTOTYPES******************/
-void* createFloor(struct Floor*, int height, int widht, int robots_amount);			// this funtion returns NULL in case it fails to allocate the memory segment
-void destroyFloor(struct Floor*);
+
 static void printHelp(void);
 
 struct cmdData {

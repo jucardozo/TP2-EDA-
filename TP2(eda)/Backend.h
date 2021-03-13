@@ -47,5 +47,7 @@ typedef int(*statusCallback)(struct Floor*, void*);
 
 /******************** ********************/
 int initBackend(int argc, char* argv[], statusCallback publishStatus,void* frontdata);
+void* createFloor(struct Floor*, int height, int widht, int robots_amount);			// this funtion returns NULL in case it fails to allocate the memory segment
+void destroyFloor(struct Floor*);
 
 #endif   //backend.h

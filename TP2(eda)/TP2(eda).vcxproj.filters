@@ -30,6 +30,9 @@
     <ClInclude Include="lib\libparse\libparse.h">
       <Filter>Header Files\lib</Filter>
     </ClInclude>
+    <ClInclude Include="Mode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Backend.c">
@@ -40,6 +43,9 @@
     </ClCompile>
     <ClCompile Include="lib\libparse\libparse.c">
       <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="Mode.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
