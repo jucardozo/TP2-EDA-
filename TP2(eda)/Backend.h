@@ -17,7 +17,7 @@ struct Floor			// this struct will save all the information of floor
 	struct RobotCollection robots;		//will save all the information of the robots such as the amount ,position,etc
 	double time_to_clean;		
 };
-struct RobotCollection
+ struct RobotCollection
 {
 	int robots_number;
 	struct Robot* robots;

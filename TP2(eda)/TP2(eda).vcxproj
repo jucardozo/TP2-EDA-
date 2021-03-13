@@ -140,9 +140,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Backend.h" />
+    <ClInclude Include="Robots.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Backend.c" />
+    <ClCompile Include="Robots.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

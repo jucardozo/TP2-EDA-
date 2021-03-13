@@ -18,9 +18,15 @@
     <ClInclude Include="Backend.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Robots.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Backend.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Robots.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
