@@ -1,13 +1,18 @@
 #ifndef BACKEND_H
 #define BACKEND_H	1
 
-/***********DEFINES******************/
-#define SUCCESS		(0)
-#define FAILURE		(-1)
-#define TILE_CLEAN	(1)			// This will also be returned when the whole floor is clean
-#define TILE_DIRTY	(0)
+/******************** DEFINITIONS ********************/
+#define SUCCESS				(0)
+#define FAILURE				(-1)
+#define TILE_CLEAN			(1)			// This will also be returned when the whole floor is clean
+#define TILE_DIRTY			(0)
 
-/*************STRUCT AND TYPEDEF*****************/
+// Minimum decimal precision taken into account for floats and double
+#define MINIMUM_PRECISION	(3)
+
+/******************** MACROS ********************/
+
+/******************** STRUCTURES AND TYPEDEF ********************/
 struct Floor			// this struct will save all the information of floor
 {
 	int height;			
@@ -35,8 +40,7 @@ struct Position
 
 typedef int(*statusCallback)(struct Floor*, void*);
 
-/**********************PROTOTYPES******************/
-
+/******************** ********************/
 void initBackend(int argc, char* argv[], statusCallback publishStatus,void* frontdata);
 
 #endif   //backend.h
