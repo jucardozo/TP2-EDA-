@@ -20,6 +20,6 @@ void* generateRobots(struct Floor* floor_p, int ammount) {
 		floor_p->robots.robots->coordinates.x = 0;			//a random number is assigned between zero and the maximum width value
 		floor_p->robots.robots->coordinates.y = 0;			//a random number is assigned between zero and the maximum height value
 		floor_p->robots.robots->angle = 0;
-		return NULL
+		return NULL;
 	}
 }
