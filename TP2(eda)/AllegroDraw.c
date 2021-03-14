@@ -56,9 +56,12 @@ int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font) {
 	return error;
 }
 
-void destroyFrontEnd(ALLEGRO_FONT** font){
+void destroyFrontEnd(void * front_data){
 
-	al_destroy_font(*font);
+	FrontData* p2front_data = (FrontData*)front_data;
+
+	al_destroy_font(p2front_data->font);
+	free(p2front_data->times_recorded);
 }
 
 int publishStatus(struct Floor* floor, void* front_data) {
@@ -156,8 +159,8 @@ int drawFunction(struct Floor* floor, void* front_data) {
 
 		al_clear_to_color(al_map_rgb(255, 255, 255));
 
-		al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2, ALLEGRO_ALIGN_LEFT, "SIMULANDO CON");
-		al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2 - 100, ALLEGRO_ALIGN_LEFT, (count+1) );
+		//al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2, ALLEGRO_ALIGN_LEFT, "SIMULANDO CON");
+		//al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2 - 100, ALLEGRO_ALIGN_LEFT, (count+1) );
 
 		al_flip_display();
 
@@ -192,7 +195,7 @@ int drawFunction(struct Floor* floor, void* front_data) {
 				12, al_map_rgb(255, 0, 0));
 		}
 
-		al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 4, SCREENHEIGHT / 4, ALLEGRO_ALIGN_LEFT, "01235");
+		//al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 4, SCREENHEIGHT / 4, ALLEGRO_ALIGN_LEFT, "01235");
 
 		al_flip_display();
 

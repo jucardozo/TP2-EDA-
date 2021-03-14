@@ -26,7 +26,7 @@ runModeOne(int robots_number, int width, int height, statusCallback publishStatu
 
     if (status != NULL) {						//if he could assign it, I'll go for a loop
         floor.game_mode = MODE1;
-        while ((is_all_clean == TILE_CLEAN) || fail==0) {	//the loop will repeat until it is all clean or until some function fails
+        while ((is_all_clean != TILE_CLEAN) && (fail==0) ) {	//the loop will repeat until it is all clean or until some function fails
             if (publishStatus(&floor, front_data)) {
                 return FAILURE;
             }

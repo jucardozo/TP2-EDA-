@@ -19,6 +19,6 @@ int initFrontEnd(void* front_data);
 
 int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font);
 
-void destroyFrontEnd(ALLEGRO_FONT** font);
+void destroyFrontEnd(void * front_data);
 
 int publishStatus(struct Floor* floor, void* front_data);

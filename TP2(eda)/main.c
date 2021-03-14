@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 
 	initBackend(argc, argv, publishStatus, &front_data);
 
-	destroyFrontEnd(&font);
+	destroyFrontEnd(&front_data);
 
 	return 0;
 }
