@@ -42,17 +42,20 @@ initBackend(int argc, char* argv[],
 		printHelp();
 		return FAILURE;
 	}
-	else if(command_line_input.mode == 1) {
-		runModeOne(command_line_input.robots_number,
-			command_line_input.width, command_line_input.height, 
+
+	if(command_line_input.mode == 1) {
+		return runModeOne(command_line_input.robots_number,
+			command_line_input.width, command_line_input.height,
 			publishStatus, front_data);
 	}
 	else if (command_line_input.mode == 2) {
-		runModeTwo(command_line_input.width, command_line_input.height,
+		return runModeTwo(command_line_input.width, 
+			command_line_input.height,
 			publishStatus, front_data);
 	}
-
-	return SUCCESS;
+	else {
+		return FAILURE;
+	}
 }
 
 static int
