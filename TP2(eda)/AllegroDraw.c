@@ -54,7 +54,7 @@ int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font) {
 		error = 1;
 	}
 
-	if (!(*font = al_load_ttf_font("C:\\Users\\Damian\\source\\repos\\TP2-eda-\\TP2(eda)\\IBMPlexSerif-Regular.ttf", 10, 0) ) ) {
+	if (!(*font = al_load_ttf_font("..\\TP2(eda)\\IBMPlexSerif-Regular.ttf", 10, 0) ) ) {
 
 		printf("Error loading font\n");
 		error = 1;
@@ -186,8 +186,8 @@ int drawFunction2(FrontData * front_data){
 	//Here comes the drawing of the function
 
 	al_clear_to_color(al_map_rgb(255, 255, 255));
-	al_draw_line(BORDE_WIDTH, BORDE_WIDTH, BORDE_WIDTH, BORDE_WIDTH + SCREENHEIGHT, al_map_rgb(0, 0, 0), 8);
-	al_draw_line(BORDE_WIDTH, BORDE_WIDTH + SCREENHEIGHT, BORDE_WIDTH + SCREENWIDHT, BORDE_WIDTH + SCREENHEIGHT, al_map_rgb(0, 0, 0), 8);
+	al_draw_line(BORDE_WIDTH, BORDE_WIDTH, BORDE_WIDTH, BORDE_WIDTH + SCREENHEIGHT, al_map_rgb(0, 0, 0), 4);
+	al_draw_line(BORDE_WIDTH, BORDE_WIDTH + SCREENHEIGHT, BORDE_WIDTH + SCREENWIDHT, BORDE_WIDTH + SCREENHEIGHT, al_map_rgb(0, 0, 0), 4);
 
 	int x_axis_gap = SCREENWIDHT / ((p2front_data->times_count) + 1);
 	int y_axis_gap = SCREENHEIGHT / times_recorded[0];	//I get the y_axis gap using the highest time.
@@ -195,12 +195,12 @@ int drawFunction2(FrontData * front_data){
 	for (int i = 1; i < ((p2front_data->times_count) + 1); i++) {
 
 		al_draw_line(BORDE_WIDTH + i * x_axis_gap, +SCREENHEIGHT + BORDE_WIDTH + 10,
-			BORDE_WIDTH + i * x_axis_gap, SCREENHEIGHT + BORDE_WIDTH - 10, al_map_rgb(0, 0, 0), 4);
+			BORDE_WIDTH + i * x_axis_gap, SCREENHEIGHT + BORDE_WIDTH - 10, al_map_rgb(0, 0, 0), 2);
 	}
 	for (int i = 1; i < ((p2front_data->times_count) + 1); i++) {
 
 		al_draw_line(BORDE_WIDTH + 10, BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap,
-			BORDE_WIDTH - 10, BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap, al_map_rgb(0, 0, 0), 4);
+			BORDE_WIDTH - 10, BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap, al_map_rgb(0, 0, 0), 2);
 	}
 
 	for (int i = 1; i < ((p2front_data->times_count) + 1); i++) {	//I run over every time recorded to draw the point
@@ -208,7 +208,7 @@ int drawFunction2(FrontData * front_data){
 		al_draw_filled_circle(BORDE_WIDTH + i * x_axis_gap, BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap,
 			4, al_map_rgb(255, 0, 0));
 
-		_gcvt_s(aux_str, 20 * sizeof(char), times_recorded[i - 1], 3);
+		_gcvt_s(aux_str, 20 * sizeof(char), times_recorded[i - 1], 6);
 
 		al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,
 			BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap - 15, ALLEGRO_ALIGN_LEFT, aux_str);

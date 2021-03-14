@@ -23,9 +23,13 @@ int main(int argc, char* argv[]) {
 
 	initBackend(argc, argv, publishStatus, &front_data);
 
-	if (1) {
+	if (1) {	//MODE2
 
 		drawFunction2(&front_data);
+	}
+	else if (0) {		//MODE1
+
+		//IMPRIMO EL TIEMPO TOTAL EN TICKS, CASTEADO A INT
 	}
 
 	destroyFrontEnd(&front_data);
