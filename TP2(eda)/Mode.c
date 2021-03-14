@@ -26,7 +26,9 @@ runModeOne(int robots_number, int width, int height, statusCallback publishStatu
     if (status != NULL) {						//if he could assign it, I'll go for a loop
         floor.game_mode = MODE1;
         while ((is_all_clean == TILE_CLEAN) || fail==0) {	//the loop will repeat until it is all clean or until some function fails
-            publishStatus(&floor, front_data);
+            if (publishStatus(&floor, front_data)) {
+                return FAILURE;
+            }
             coords_t max = { .x = (double)floor.width, .y = (double)floor.height };
             moverobots_p = moveRobots(&(floor.robots), max);
             if (moverobots_p != NULL) {
@@ -103,7 +105,9 @@ runModeTwo(int width, int height, statusCallback publishStatus, void* front_data
         }
 
         current_floor.time_to_clean = times_sum / SIMULATION_ITERATIONS;
-        publishStatus(&current_floor, front_data);
+        if (publishStatus(&current_floor, front_data)) {
+            return FAILURE;
+        }
 
     } while (islessequal(current_floor.time_to_clean - prev_simu_time,
                          SIMULATIONS_DELTA)
@@ -125,7 +129,7 @@ runModeTwo(int width, int height, statusCallback publishStatus, void* front_data
  */
 static double
 elapsedTime(clock_t final, clock_t initial) {
-    return ( ( (double)(final - initial) ) / CLOCKS_PER_SEC );
+    return ( ( ((double)final - (double)initial) ) / CLOCKS_PER_SEC );
 }
 
 

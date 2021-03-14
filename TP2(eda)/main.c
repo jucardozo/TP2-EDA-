@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "AllegroDraw.h"
 #include "Backend.h"
 
@@ -17,8 +18,6 @@ int main(int argc, char* argv[]) {
 
 		printf("Error initializing allegro components\n");
 	}
-
-	struct Floor floor;
 
 	initBackend(argc, argv, publishStatus, &front_data);
 

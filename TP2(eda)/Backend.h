@@ -39,9 +39,10 @@ struct Floor {			// this struct will save all the information of floor
     double time_to_clean; // Time used to fully clean the floor
 };
 
+// Should return 0 on success. Any other value means error.
 typedef int(*statusCallback)(struct Floor*, void*);
 
-/******************** ********************/
+/******************** PROTOTYPES ********************/
 int initBackend(int argc, char* argv[], statusCallback publishStatus, void* front_data);
 
 #endif   //backend.h
