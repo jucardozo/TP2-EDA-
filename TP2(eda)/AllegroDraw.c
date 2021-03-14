@@ -14,7 +14,7 @@ int initFrontEnd(void* front_data){
 
 	FrontData* p2front_data = (FrontData*) front_data;
 
-	p2front_data->times_recorded = (double*)malloc(50 * sizeof(double));	//Here is where I'm going to save the times that are entered
+	p2front_data->times_recorded = (long double*)malloc(50 * sizeof(long double));	//Here is where I'm going to save the times that are entered
 
 	if (p2front_data->times_recorded == NULL) {
 
@@ -155,65 +155,68 @@ int drawFloor(struct Floor* floor, void* front_data) {
 
 int drawFunction(struct Floor* floor, void* front_data) {
 
-	char aux_str[20];	//String that's being used to write letters and numbers
 	int error = 0;
 	FrontData* p2front_data = (FrontData*)front_data;	//This variables are defined to make the function more readable
 	long double* times_recorded = p2front_data->times_recorded;
 
-	if (floor->time_to_clean > 0.1) {	//I won't draw anything until the time is beaten
+	printf("%f\n", floor->time_to_clean);
 
-		times_recorded[(p2front_data->times_count)] = floor->time_to_clean;
-		(p2front_data->times_count)++;
+	times_recorded[(p2front_data->times_count)] = floor->time_to_clean;
+	(p2front_data->times_count)++;
 
-		al_clear_to_color(al_map_rgb((p2front_data->times_count) * 5, (p2front_data->times_count) * 5, (p2front_data->times_count) * 5));
+	al_clear_to_color(al_map_rgb((p2front_data->times_count) * 5, (p2front_data->times_count) * 5, (p2front_data->times_count) * 5));
 
-		//al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2, ALLEGRO_ALIGN_LEFT, "SIMULANDO CON");
-		//al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2 - 100, ALLEGRO_ALIGN_LEFT, ((p2front_data->times_count)+1) );
+	//al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2, ALLEGRO_ALIGN_LEFT, "SIMULANDO CON");
+	//al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2 - 100, ALLEGRO_ALIGN_LEFT, ((p2front_data->times_count)+1) );
 
-		al_flip_display();
-
-	}
-	else {
-
-
-		times_recorded[(p2front_data->times_count)] = floor->time_to_clean;
-		(p2front_data->times_count)++;						//Here is the total number of "robots_number" that has been used
-
-		//Here comes the drawing of the function
-
-		al_clear_to_color(al_map_rgb(255, 255, 255));
-		al_draw_line(BORDE_WIDTH, BORDE_WIDTH, BORDE_WIDTH, BORDE_WIDTH + SCREENHEIGHT, al_map_rgb(0, 0, 0), 8);
-		al_draw_line(BORDE_WIDTH, BORDE_WIDTH + SCREENHEIGHT, BORDE_WIDTH + SCREENWIDHT, BORDE_WIDTH + SCREENHEIGHT, al_map_rgb(0, 0, 0), 8);
-
-		int x_axis_gap = SCREENWIDHT / ((p2front_data->times_count) + 1);
-		int y_axis_gap = SCREENHEIGHT / times_recorded[0];	//I get the y_axis gap using the highest time.
-
-		for (int i = 1; i < ((p2front_data->times_count) + 1); i++) {
-
-			al_draw_line(BORDE_WIDTH + i * x_axis_gap, +SCREENHEIGHT + BORDE_WIDTH + 10,
-				BORDE_WIDTH + i * x_axis_gap, SCREENHEIGHT + BORDE_WIDTH - 10, al_map_rgb(0, 0, 0), 4);
-		}
-		for (int i = 1; i < ((p2front_data->times_count) + 1); i++) {
-
-			al_draw_line(BORDE_WIDTH + 10, BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap,
-				BORDE_WIDTH - 10, BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap, al_map_rgb(0, 0, 0), 4);
-		}
-
-		for (int i = 1; i < ((p2front_data->times_count) + 1); i++) {	//I run over every time recorded to draw the point
-
-			al_draw_filled_circle(BORDE_WIDTH + i * x_axis_gap, BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap,
-				4, al_map_rgb(255, 0, 0));
-
-			_gcvt_s(aux_str, 20*sizeof(char) ,times_recorded[i - 1], 3);
-
-			al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,
-			  BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap + 15, ALLEGRO_ALIGN_LEFT, aux_str );
-		}
-
-		al_flip_display();
-
-		Sleep(500);
-	}
+	al_flip_display();
 
 	return error;
 }
+
+int drawFunction2(FrontData * front_data){
+
+	char aux_str[20];	//String that's being used to write letters and numbers
+
+	FrontData* p2front_data = (FrontData*)front_data;	//This variables are defined to make the function more readable
+	long double* times_recorded = p2front_data->times_recorded;
+
+	(p2front_data->times_count)++;						//Here is the total number of "robots_number" that has been used
+
+	//Here comes the drawing of the function
+
+	al_clear_to_color(al_map_rgb(255, 255, 255));
+	al_draw_line(BORDE_WIDTH, BORDE_WIDTH, BORDE_WIDTH, BORDE_WIDTH + SCREENHEIGHT, al_map_rgb(0, 0, 0), 8);
+	al_draw_line(BORDE_WIDTH, BORDE_WIDTH + SCREENHEIGHT, BORDE_WIDTH + SCREENWIDHT, BORDE_WIDTH + SCREENHEIGHT, al_map_rgb(0, 0, 0), 8);
+
+	int x_axis_gap = SCREENWIDHT / ((p2front_data->times_count) + 1);
+	int y_axis_gap = SCREENHEIGHT / times_recorded[0];	//I get the y_axis gap using the highest time.
+
+	for (int i = 1; i < ((p2front_data->times_count) + 1); i++) {
+
+		al_draw_line(BORDE_WIDTH + i * x_axis_gap, +SCREENHEIGHT + BORDE_WIDTH + 10,
+			BORDE_WIDTH + i * x_axis_gap, SCREENHEIGHT + BORDE_WIDTH - 10, al_map_rgb(0, 0, 0), 4);
+	}
+	for (int i = 1; i < ((p2front_data->times_count) + 1); i++) {
+
+		al_draw_line(BORDE_WIDTH + 10, BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap,
+			BORDE_WIDTH - 10, BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap, al_map_rgb(0, 0, 0), 4);
+	}
+
+	for (int i = 1; i < ((p2front_data->times_count) + 1); i++) {	//I run over every time recorded to draw the point
+
+		al_draw_filled_circle(BORDE_WIDTH + i * x_axis_gap, BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap,
+			4, al_map_rgb(255, 0, 0));
+
+		_gcvt_s(aux_str, 20 * sizeof(char), times_recorded[i - 1], 3);
+
+		al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,
+			BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap - 15, ALLEGRO_ALIGN_LEFT, aux_str);
+	}
+
+	al_flip_display();
+
+	Sleep(50000);
+
+}
+

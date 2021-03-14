@@ -23,3 +23,5 @@ int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font);
 void destroyFrontEnd(void * front_data);
 
 int publishStatus(struct Floor* floor, void* front_data);
+
+int drawFunction2(FrontData * front_data);

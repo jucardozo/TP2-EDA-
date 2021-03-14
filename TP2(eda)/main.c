@@ -6,7 +6,7 @@ int main(int argc, char* argv[]) {
 
 	FrontData front_data;
 
-	if (!initFrontEnd(&front_data)) {
+	if (initFrontEnd(&front_data)) {
 
 		printf("Error initializing front_data\n");
 	}
@@ -22,6 +22,11 @@ int main(int argc, char* argv[]) {
 	front_data.font = fontTTF;
 
 	initBackend(argc, argv, publishStatus, &front_data);
+
+	if (1) {
+
+		drawFunction2(&front_data);
+	}
 
 	destroyFrontEnd(&front_data);
 
