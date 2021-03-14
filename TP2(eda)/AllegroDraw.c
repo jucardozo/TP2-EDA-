@@ -13,7 +13,7 @@ int initFrontEnd(void* front_data){
 
 	FrontData* p2front_data = (FrontData*) front_data;
 
-	p2front_data->times_recorded = (int*)malloc(50 * sizeof(double));	//Here is where I'm going to save the times that are entered
+	p2front_data->times_recorded = (double*)malloc(50 * sizeof(double));	//Here is where I'm going to save the times that are entered
 
 	if (p2front_data->times_recorded == NULL) {
 
@@ -124,7 +124,9 @@ int drawFloor(struct Floor* floor, void* front_data) {
 		x = (floor->robots.robots[i]).coordinates.x;
 		y = (floor->robots.robots[i]).coordinates.y;
 
-		al_draw_filled_circle(x*vertical_gap, y*horizontal_gap, 6, al_map_rgb(0,230,255) );
+		al_draw_filled_circle(y*vertical_gap + (SCREENWIDHT - horizontal_gap * w) / 2 + BORDE_WIDTH,
+			y*horizontal_gap + (SCREENHEIGHT - vertical_gap * h) / 2 + BORDE_WIDTH ,
+			6, al_map_rgb(0,230,255) );
 	}
 
 	al_flip_display();
