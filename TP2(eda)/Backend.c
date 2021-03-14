@@ -1,14 +1,11 @@
-#include <stdlib.h>				//this library includes malloc
+#include <stdio.h>				/* printf */
+#include <stdlib.h>				/* atoi */
 #include <string.h>				/* strcmp */
-#include <time.h>
 
 #include "lib/libparse/libparse.h"
 #include "Backend.h"
+#include "Mode.h"
 #include "Robots.h"
-
-/**********************PROTOTYPES******************/
-
-static void printHelp(void);
 
 struct cmdData {
 	int width;
@@ -16,6 +13,11 @@ struct cmdData {
 	int robots_number;
 	int mode;
 };
+
+
+/**********************PROTOTYPES******************/
+static int parseCallback(char* key, char* value, void* userData);
+static void printHelp(void);
 
 int
 initBackend(int argc, char* argv[], 
@@ -40,18 +42,21 @@ initBackend(int argc, char* argv[],
 		printHelp();
 		return FAILURE;
 	}
-	else if(command_line_input.mode = 1) { // TODO
+	else if(command_line_input.mode = 1) {
 		runModeOne(command_line_input.robots_number,
-			command_line_input.width, command_line_input.height, front_data);
+			command_line_input.width, command_line_input.height, 
+			publishStatus, front_data);
 	}
-	else if (command_line_input.mode = 2) { // TODO
-		runModeTwo(command_line_input.width, command_line_input.height, front_data);
+	else if (command_line_input.mode = 2) {
+		runModeTwo(command_line_input.width, command_line_input.height,
+			publishStatus, front_data);
 	}
 
 	return SUCCESS;
 }
 
-int parseCallback(char* key, char* value, void* userData) {
+static int
+parseCallback(char* key, char* value, void* userData) {
 	if (userData == NULL) return PARAMS_INVALID;
 	
 	struct cmdData* args_storage = (struct cmdData*) userData;

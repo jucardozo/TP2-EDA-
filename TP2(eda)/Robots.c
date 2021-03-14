@@ -31,8 +31,9 @@ static long int ipow(unsigned int base, unsigned int exponent);
 static void robotsArr(struct RobotCollection* b1, coords_t max);
 
 /******************** PUBLIC FUNCTIONS ********************/
-void* generateRobots(struct RobotCollection* b1, int ammount, int floor_width, int floor_height) {
-    if (floor_width == 0 || floor_height == 0)
+void*
+generateRobots(struct RobotCollection* b1, int ammount, coords_t maximum) {
+    if (maximum.x == 0 || maximum.y == 0)
         return NULL;
 
     // B1 Droids... those weren't very smart, were them?
@@ -40,8 +41,7 @@ void* generateRobots(struct RobotCollection* b1, int ammount, int floor_width, i
     if (b1->robots != NULL) {
         b1->robots_number = ammount;            
 
-        coords_t floor_limits = { (double)floor_width, (double)floor_height };
-        robotsArr(b1, floor_limits);  //create a defined number of robots, giving them random position and direction
+        robotsArr(b1, maximum);  //create a defined number of robots, giving them random position and direction
 
         return b1->robots;
     }
@@ -50,12 +50,14 @@ void* generateRobots(struct RobotCollection* b1, int ammount, int floor_width, i
     }
 }
 
-void destroyRobots(struct RobotCollection* b1) {
+void
+destroyRobots(struct RobotCollection* b1) {
     free(b1->robots);
     b1->robots_number = 0;
 }
 
-void* moveRobots(struct RobotCollection* b1, coords_t maximum_coordinates){
+void*
+moveRobots(struct RobotCollection* b1, coords_t maximum_coordinates){
     if (b1 == NULL)
         return NULL;
 
@@ -113,7 +115,8 @@ void* moveRobots(struct RobotCollection* b1, coords_t maximum_coordinates){
  * Returns:
  *  Number in range [0.0;360.0) with at most MINIMUM_PRECISION decimals.
  */
-static double getRandomAngle(void) {
+static double
+getRandomAngle(void) {
     // Generate two random numbers:
     // .- Integer part ( 0 <= integer < 360)
     // .- Decimal part ( 0 <= decimal < 100)
@@ -238,7 +241,8 @@ newCoordinates(coords_t * current, double angle, coords_t * new, double module) 
  *  Success: base^exponent
  *  Failure: -1 (i.e. when trying to perform 0^0)
  */
-static long int ipow(unsigned int base, unsigned int exponent) {
+static long int
+ipow(unsigned int base, unsigned int exponent) {
     if (base == 0 && exponent == 0) {
         return -1;
     }
@@ -285,7 +289,8 @@ static long int ipow(unsigned int base, unsigned int exponent) {
  *  Nothing
  * 
 */
-static void robotsArr(struct RobotCollection* b1, coords_t max) {
+static void
+robotsArr(struct RobotCollection* b1, coords_t max) {
     for (int limit = 0; limit < b1->robots_number; limit++) {
         b1->robots[limit].coordinates.x = (0 + rand() % ((int) max.x));            //a random number is assigned between zero and the maximum width value
         b1->robots[limit].coordinates.y = (0 + rand() % ((int) max.y));           //a random number is assigned between zero and the maximum height value

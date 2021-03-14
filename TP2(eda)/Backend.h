@@ -1,6 +1,8 @@
 #ifndef BACKEND_H
 #define BACKEND_H	1
 
+#include "Robots.h" /* RobotCollection ..too late to set as a * in Floor ): */
+
 /******************** DEFINITIONS ********************/
 #define SUCCESS			    	(0)
 #define FAILURE				    (-1)
@@ -17,18 +19,25 @@
 // Time difference between two simulations in mode 2
 #define SIMULATIONS_DELTA       (0.1)
 
+enum game_mode {
+    MODE_UNSET = 0,
+    MODE1,
+    MODE2,
+};
+
 /******************** MACROS ********************/
 
 /******************** STRUCTURES AND TYPEDEF ********************/
-struct RobotCollection; // Forward declaration. See "Robots.h"
+//struct RobotCollection; // Forward declaration. See "Robots.h"
 
 struct Floor {			// this struct will save all the information of floor
+    int game_mode;
     int height;
     int width;
     int* clean;					//will save  the memory segment location
     int clean_size;
     struct RobotCollection robots;		//will save all the information of the robots such as the amount ,position,etc
-    double time_to_clean;		
+    double time_to_clean;
 };
 
 typedef int(*statusCallback)(struct Floor*, void*);

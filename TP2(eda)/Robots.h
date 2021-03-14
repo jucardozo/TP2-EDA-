@@ -1,8 +1,6 @@
 #ifndef ROBOTS_H
 #define ROBOTS_H	1
 
-//#include "Backend.h"
-
 /******************** DEFINITIONS ********************/
 /******************** MACROS ********************/
 /******************** STRUCTURES AND TYPEDEF ********************/
@@ -28,14 +26,14 @@ struct RobotCollection {
  * Arguments:
  *  b1: Collection where robots will be stored.
  *  ammount: number of robots to generate.
- *  floor_width: Width of the floor where this robots will work.
- *  floor_height: Height of the floor where this robots will work.
+ *  maximum: Maximum X and Y coordinates a robot can take.
+ *          (Usually, the floor's width and height).
  * 
  * Returns:
  *  Success: allocated memory segment address
  *  Failure: NULL
  */
-void* generateRobots(struct RobotCollection* b1, int ammount, int floor_width, int floor_height);
+void* generateRobots(struct RobotCollection* b1, int ammount, coords_t maximum);
 
 /*
  * Destroy all robots in a robot collection and sets its robots_number to 0.

@@ -1,16 +1,20 @@
 #include <stdio.h>
-#include <math.h> /* islessequal */
-#include <time.h> /* clock_t, clock(), CLOCKS_PER_SEC */
+#include <stdlib.h>     /* malloc, srand, rand */
+#include <math.h>       /* islessequal */
+#include <time.h>       /* time, clock_t, clock(), CLOCKS_PER_SEC */
 #include "Backend.h"
 #include "Mode.h"
 #include "Robots.h"
 
-static void* createFloor(struct Floor*, int height, int widht, int robots_amount);			// this funtion returns NULL in case it fails to allocate the memory segment
+static void* createFloor(struct Floor*, int width, int height, int robots_amount);			// this funtion returns NULL in case it fails to allocate the memory segment
 static void destroyFloor(struct Floor*);
 static int cleanFloor(struct Floor* floor_p);
 static int isFloorClean(struct Floor* floor_p);
+static void floorSoftReset(struct Floor* floor_p);
+static double elapsedTime(clock_t final, clock_t initial);
 
-int runModeOne(int robots_number, int width, int height, statusCallback publishStatus, void * front_data) {
+int
+runModeOne(int robots_number, int width, int height, statusCallback publishStatus, void * front_data) {
     struct Floor floor = {0};
 
     void*status,*moverobots_p;
@@ -20,10 +24,11 @@ int runModeOne(int robots_number, int width, int height, statusCallback publishS
     status = createFloor(&floor, height, width, robots_number);
 
     if (status != NULL) {						//if he could assign it, I'll go for a loop
+        floor.game_mode = MODE1;
         while ((is_all_clean == TILE_CLEAN) || fail==0) {	//the loop will repeat until it is all clean or until some function fails
             publishStatus(&floor, front_data);
-            coords_t max = { floor.width, floor.height };
-            moverobots_p = moveRobots(&floor, max);
+            coords_t max = { .x = (double)floor.width, .y = (double)floor.height };
+            moverobots_p = moveRobots(&(floor.robots), max);
             if (moverobots_p != NULL) {
 
                 is_clean = cleanFloor(&floor);
@@ -53,19 +58,23 @@ int runModeOne(int robots_number, int width, int height, statusCallback publishS
 
 }
 
-int runModeTwo(int width, int height, statusCallback publishStatus, void* front_data) {
+int
+runModeTwo(int width, int height, statusCallback publishStatus, void* front_data) {
     int needed_robots = 0;
 
     double times_sum = 0.0; // Sum of all times elapsed until now to clean the floor
     double prev_simu_time = 0.0;
 
     struct Floor current_floor = { 0 };
+    coords_t max_robot_coord = { .x = (double)width, .y = (double)height };
 
     clock_t initial_time = 0, final_time = 0; // For timing
 
     if (createFloor(&current_floor, height, width, needed_robots) == NULL) {
         return FAILURE;
     }
+
+    current_floor.game_mode = MODE2;
 
     do {
         // The first time this loop is running, thhis three lines 
@@ -75,8 +84,7 @@ int runModeTwo(int width, int height, statusCallback publishStatus, void* front_
         destroyRobots(&(current_floor.robots));
 
         needed_robots += 1;
-        generateRobots(&(current_floor.robots), needed_robots,
-                        current_floor.width, current_floor.height);
+        generateRobots(&(current_floor.robots), needed_robots, max_robot_coord);
 
         for (int i = 0; i < SIMULATION_ITERATIONS; i++) {
             floorSoftReset(&current_floor);
@@ -115,7 +123,8 @@ int runModeTwo(int width, int height, statusCallback publishStatus, void* front_
  * Returns:
  *  The difference between those times as double.
  */
-static double elapsedTime(clock_t final, clock_t initial) {
+static double
+elapsedTime(clock_t final, clock_t initial) {
     return ( ( (double)(final - initial) ) / CLOCKS_PER_SEC );
 }
 
@@ -133,7 +142,8 @@ static double elapsedTime(clock_t final, clock_t initial) {
  * Returns:
  *  Nothing
  */
-static void floorSoftReset(struct Floor* floor_p) {
+static void
+floorSoftReset(struct Floor* floor_p) {
     for (int i = 0; i < floor_p->clean_size; i++) {
         floor_p->clean[i] = TILE_DIRTY;
     }
@@ -150,52 +160,64 @@ static void floorSoftReset(struct Floor* floor_p) {
  *  robots_ammount: How many robots should be initialized over this floor.
  * 
  * Returns:
- *  Nothing
+ *  Success: Pointer to floor_p
+ *  Failure: NULL
+ *
  */
-static void* createFloor(struct Floor* floor_p, int height, int widht, int robots_amount) {
-    void* pointer;
-    srand(time(NULL)); // For robots :)
-
-    floor_p->clean = malloc((height * widht) * sizeof(int));				//an order is placed for a memory segment
-    if (floor_p->clean != NULL) { 							//if returns NULL then the memory segment could not be allocated,otherwise it will contain the segment address
-        floor_p->height = height;
-        floor_p->width = widht;
-        floor_p->clean_size = (height*widht);
-        floor_p->time_to_clean = 0;							//initially since the time was not calculated, it is zero
-        pointer = generateRobots(&(floor_p->robots), robots_amount,
-                                 floor_p->width, floor_p->height);
-        if (pointer == NULL) {							//if it points to null then the robots could not be created
-            return NULL;
-        }
-        else {
-            return floor_p->clean;
-        }
-    }
-    else{												// the main is informed that it failed
-
+static void*
+createFloor(struct Floor* floor_p, int width, int height, int robots_amount) {
+    if (floor_p == NULL)
         return NULL;
-    }
+
+    if (width == 0 && height == 0)
+        return NULL;
+
+    if (robots_amount < 0)
+        return NULL;
+
+    void* pointer;
+    coords_t max = { .x = (double)width, .y = (double)height };
+    srand((unsigned int) time(NULL)); // For robots :)
+
+    floor_p->clean = malloc((height * width) * sizeof(int));				//an order is placed for a memory segment
+    if (floor_p->clean == NULL) //if returns NULL then the memory segment could not be allocated,otherwise it will contain the segment address
+        return NULL;
+
+    floor_p->height = height;
+    floor_p->width = width;
+    floor_p->clean_size = (height*width);
+    floor_p->time_to_clean = 0;							//initially since the time was not calculated, it is zero
+
+    pointer = generateRobots(&(floor_p->robots), robots_amount, max);
+
+    if (pointer == NULL)							//if it points to null then the robots could not be created
+        return NULL;
+    
+    return floor_p;
 }
 
 /*
  * Destroy a floor.
  * 
  * Arguments:
- *  None
+ *  floor_p: Floor to destroy.
  * 
  * Returns:
  *  Nothing
  */
-static void destroyFloor(struct Floor* floor_p){
-    floor_p->robots.robots_number = 0;
-    floor_p->robots.robots->coordinates.x = 0;
-    floor_p->robots.robots->coordinates.y = 0;
-    floor_p->robots.robots->angle = 0;
+static void
+destroyFloor(struct Floor* floor_p){
+    if (floor_p == NULL)
+        return;
+
+    floor_p->game_mode = MODE_UNSET;
     floor_p->height = 0;
     floor_p->width = 0;
-    floor_p->clean_size = (0);
+    floor_p->clean_size = 0;
     floor_p->time_to_clean = 0;
-    free(floor_p->robots.robots);
+
+    destroyRobots(&(floor_p->robots));
+
     free(floor_p->clean);
 }
 
@@ -209,7 +231,8 @@ static void destroyFloor(struct Floor* floor_p){
  *  Success: SUCCESS definition
  *  Failure: FAILURE definition
  */
-int cleanFloor(struct Floor* floor_p) {
+int
+cleanFloor(struct Floor* floor_p) {
     if (floor_p == NULL)
         return FAILURE;
 
@@ -235,7 +258,8 @@ int cleanFloor(struct Floor* floor_p) {
  *  All tiles are clean: TILE_CLEAN definition
  *  At least one tile is dirty: TILE_DIRTY definition
  */
-int isFloorClean(struct Floor* floor) {
+int
+isFloorClean(struct Floor* floor) {
     if (floor == NULL)
         return FAILURE;
 
