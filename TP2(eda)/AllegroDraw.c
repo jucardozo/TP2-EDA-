@@ -108,6 +108,10 @@ int drawFloor(struct Floor* floor, void* front_data) {
 
 				al_draw_filled_rectangle(dist_lat_border + j * horizontal_gap, dist_vert_border + i * vertical_gap, dist_lat_border + (j + 1) * horizontal_gap, dist_vert_border + (i + 1) * vertical_gap, al_map_rgb(255, 255, 255));
 			}
+			else {	//TODO: esto es para debuggear, si no vale 1 ni cero te va a imprimir la baldosa en verde
+
+				al_draw_filled_rectangle(dist_lat_border + j * horizontal_gap, dist_vert_border + i * vertical_gap, dist_lat_border + (j + 1) * horizontal_gap, dist_vert_border + (i + 1) * vertical_gap, al_map_rgb(0, 0, 255));
+			}
 		}
 	}
 
@@ -126,8 +130,8 @@ int drawFloor(struct Floor* floor, void* front_data) {
 		x = (floor->robots.robots[i]).coordinates.x;
 		y = (floor->robots.robots[i]).coordinates.y;
 
-		al_draw_filled_circle(y*vertical_gap + (SCREENWIDHT - horizontal_gap * w) / 2 + BORDE_WIDTH,
-			y*horizontal_gap + (SCREENHEIGHT - vertical_gap * h) / 2 + BORDE_WIDTH ,
+		al_draw_filled_circle(x*horizontal_gap + (SCREENWIDHT - horizontal_gap * w) / 2 + BORDE_WIDTH,
+			y*vertical_gap + (SCREENHEIGHT - vertical_gap * h) / 2 + BORDE_WIDTH ,
 			6, al_map_rgb(0,230,255) );
 	}
 
@@ -152,8 +156,8 @@ int drawFunction(struct Floor* floor, void* front_data) {
 
 		al_clear_to_color(al_map_rgb(255, 255, 255));
 
-		//al_draw_text(font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2, ALLEGRO_ALIGN_LEFT, "SIMULANDO CON");
-		//al_draw_text(font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2 - 100, ALLEGRO_ALIGN_LEFT, (conteo+1) );
+		al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2, ALLEGRO_ALIGN_LEFT, "SIMULANDO CON");
+		al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2 - 100, ALLEGRO_ALIGN_LEFT, (count+1) );
 
 		al_flip_display();
 
@@ -188,7 +192,7 @@ int drawFunction(struct Floor* floor, void* front_data) {
 				12, al_map_rgb(255, 0, 0));
 		}
 
-		//al_draw_text(font, al_map_rgb(0, 0, 0), SCREENWIDHT / 4, SCREENHEIGHT / 4, ALLEGRO_ALIGN_LEFT, "01235");
+		al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 4, SCREENHEIGHT / 4, ALLEGRO_ALIGN_LEFT, "01235");
 
 		al_flip_display();
 
