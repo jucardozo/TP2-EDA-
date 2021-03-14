@@ -12,6 +12,7 @@ static int cleanFloor(struct Floor* floor_p);
 static int isFloorClean(struct Floor* floor_p);
 static void floorSoftReset(struct Floor* floor_p);
 static double elapsedTime(clock_t final, clock_t initial);
+void printTiles(struct Floor* f);
 
 int
 runModeOne(int robots_number, int width, int height, statusCallback publishStatus, void * front_data) {
@@ -192,6 +193,11 @@ createFloor(struct Floor* floor_p, int width, int height, int robots_amount) {
     floor_p->clean_size = (height*width);
     floor_p->time_to_clean = 0;							//initially since the time was not calculated, it is zero
 
+    // All tiles are dirty
+    for (int i = 0; i < floor_p->clean_size; i++) {
+        floor_p->clean[i] = TILE_DIRTY;
+    }
+
     pointer = generateRobots(&(floor_p->robots), robots_amount, max);
 
     if (pointer == NULL)							//if it points to null then the robots could not be created
@@ -249,6 +255,7 @@ cleanFloor(struct Floor* floor_p) {
         floor_p->clean[x + floor_p->width * y] = TILE_CLEAN;
         i++;
     }
+    printTiles(floor_p);
     return SUCCESS;
 }
 
@@ -276,3 +283,12 @@ isFloorClean(struct Floor* floor) {
     return tile_status;
 }
 
+void
+printTiles(struct Floor* f) {
+    for (int i = 0; i < f->height; i++) {
+        for (int j = 0; j < f->width; j++) {
+            printf("%d ", f->clean[j + f->height*i]);
+        }
+        putchar('\n');
+    }
+}
