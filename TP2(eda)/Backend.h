@@ -28,16 +28,15 @@ enum game_mode {
 /******************** MACROS ********************/
 
 /******************** STRUCTURES AND TYPEDEF ********************/
-//struct RobotCollection; // Forward declaration. See "Robots.h"
 
 struct Floor {			// this struct will save all the information of floor
-    int game_mode;
+    int game_mode;      // Uses game_mode enum.
     int height;
     int width;
-    int* clean;					//will save  the memory segment location
-    int clean_size;
-    struct RobotCollection robots;		//will save all the information of the robots such as the amount ,position,etc
-    double time_to_clean;
+    int* clean;			// Array with tiles status
+    int clean_size;     // Size of *clean array
+    struct RobotCollection robots; //will save all the information of the robots such as the amount ,position,etc
+    double time_to_clean; // Time used to fully clean the floor
 };
 
 typedef int(*statusCallback)(struct Floor*, void*);
