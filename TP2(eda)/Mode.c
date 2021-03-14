@@ -109,6 +109,12 @@ runModeTwo(int width, int height, statusCallback publishStatus, void* front_data
         }
 
         current_floor.time_to_clean = times_sum / SIMULATION_ITERATIONS;
+        
+        printf("Robots: %d\tTime: %f\t(Previous: %f)\n", 
+            current_floor.robots.robots_number,
+            current_floor.time_to_clean,
+            prev_simu_time); // DEBUG
+
         if (publishStatus(&current_floor, front_data)) {
             return FAILURE;
         }
@@ -260,7 +266,7 @@ cleanFloor(struct Floor* floor_p) {
         floor_p->clean[x + floor_p->width * y] = TILE_CLEAN;
         i++;
     }
-    printTiles(floor_p);
+    //printTiles(floor_p);
     return SUCCESS;
 }
 
