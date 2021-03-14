@@ -28,6 +28,7 @@ runModeOne(int robots_number, int width, int height, statusCallback publishStatu
         floor.game_mode = MODE1;
         while ((is_all_clean != TILE_CLEAN) && (fail==0) ) {	//the loop will repeat until it is all clean or until some function fails
             if (publishStatus(&floor, front_data)) {
+                destroyFloor(status);
                 return FAILURE;
             }
             coords_t max = { .x = (double)floor.width, .y = (double)floor.height };
@@ -50,9 +51,11 @@ runModeOne(int robots_number, int width, int height, statusCallback publishStatu
         }
     }
     else {
+        destroyFloor(status);
         return FAILURE;
     }
     if (fail == 1) {
+        destroyFloor(status);
         return FAILURE;
     }
     else {
