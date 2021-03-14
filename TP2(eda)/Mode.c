@@ -22,7 +22,7 @@ runModeOne(int robots_number, int width, int height, statusCallback publishStatu
 
     int is_clean,is_all_clean=0, fail=0;
 
-    status = createFloor(&floor, height, width, robots_number);
+    status = createFloor(&floor, width, height, robots_number);
 
     if (status != NULL) {						//if he could assign it, I'll go for a loop
         floor.game_mode = MODE1;
@@ -73,7 +73,7 @@ runModeTwo(int width, int height, statusCallback publishStatus, void* front_data
 
     clock_t initial_time = 0, final_time = 0; // For timing
 
-    if (createFloor(&current_floor, height, width, needed_robots) == NULL) {
+    if (createFloor(&current_floor, width, height, needed_robots) == NULL) {
         return FAILURE;
     }
 
