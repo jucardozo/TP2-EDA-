@@ -36,7 +36,7 @@ struct Floor {			// this struct will save all the information of floor
     int* clean;			// Array with tiles status
     int clean_size;     // Size of *clean array
     struct RobotCollection robots; //will save all the information of the robots such as the amount ,position,etc
-    double time_to_clean; // Time used to fully clean the floor
+    long double time_to_clean; // Ammount of ticks used to fully clean the floor
 };
 
 // Should return 0 on success. Any other value means error.

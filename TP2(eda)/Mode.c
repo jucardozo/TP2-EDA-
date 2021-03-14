@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>     /* malloc, srand, rand */
 #include <math.h>       /* islessequal */
-#include <time.h>       /* time, clock_t, clock(), CLOCKS_PER_SEC */
+#include <time.h>       /* time */
+
 #include "Backend.h"
 #include "Mode.h"
 #include "Robots.h"
@@ -11,8 +12,6 @@ static void destroyFloor(struct Floor*);
 static int cleanFloor(struct Floor* floor_p);
 static int isFloorClean(struct Floor* floor_p);
 static void floorSoftReset(struct Floor* floor_p);
-static double elapsedTime(clock_t final, clock_t initial);
-void printTiles(struct Floor* f);
 
 int
 runModeOne(int robots_number, int width, int height, statusCallback publishStatus, void * front_data) {
@@ -34,6 +33,8 @@ runModeOne(int robots_number, int width, int height, statusCallback publishStatu
             coords_t max = { .x = (double)floor.width, .y = (double)floor.height };
             moverobots_p = moveRobots(&(floor.robots), max);
             if (moverobots_p != NULL) {
+
+                floor.time_to_clean += 1;
 
                 is_clean = cleanFloor(&floor);
                 if (is_clean == SUCCESS) {
@@ -68,13 +69,11 @@ int
 runModeTwo(int width, int height, statusCallback publishStatus, void* front_data) {
     int needed_robots = 0;
 
-    double times_sum = 0.0; // Sum of all times elapsed until now to clean the floor
-    double prev_simu_time = 0.0;
+    long double ticks_sum = 0.0; // Sum of all times elapsed until now to clean the floor
+    long double prev_simu_ticks = 0.0;
 
     struct Floor current_floor = { 0 };
     coords_t max_robot_coord = { .x = (double)width, .y = (double)height };
-
-    clock_t initial_time = 0, final_time = 0; // For timing
 
     if (createFloor(&current_floor, width, height, needed_robots) == NULL) {
         return FAILURE;
@@ -85,8 +84,8 @@ runModeTwo(int width, int height, statusCallback publishStatus, void* front_data
     do {
         // The first time this loop is running, thhis three lines 
         // do not do anything really useful.
-        times_sum = 0.0;
-        prev_simu_time = current_floor.time_to_clean;
+        ticks_sum = 0.0;
+        prev_simu_ticks = current_floor.time_to_clean;
         destroyRobots(&(current_floor.robots));
 
         needed_robots += 1;
@@ -94,54 +93,29 @@ runModeTwo(int width, int height, statusCallback publishStatus, void* front_data
 
         for (int i = 0; i < SIMULATION_ITERATIONS; i++) {
             floorSoftReset(&current_floor);
-            final_time = 0;
-            initial_time = clock();
 
             do {
                 coords_t max = {(double)current_floor.width, 
                                 (double) current_floor.height};
-                moveRobots(&(current_floor.robots), max);
+                moveRobots(&(current_floor.robots), max); // A robot either moves or changes its angle
+                ticks_sum += 1;
                 cleanFloor(&current_floor);
             } while (isFloorClean(&current_floor) != TILE_CLEAN);
 
-            final_time = clock();
-            times_sum += elapsedTime(final_time, initial_time);
         }
 
-        current_floor.time_to_clean = times_sum / SIMULATION_ITERATIONS;
+        current_floor.time_to_clean = ticks_sum / SIMULATION_ITERATIONS;
         
-        printf("Robots: %d\tTime: %f\t(Previous: %f)\n", 
-            current_floor.robots.robots_number,
-            current_floor.time_to_clean,
-            prev_simu_time); // DEBUG
-
         if (publishStatus(&current_floor, front_data)) {
             return FAILURE;
         }
 
-    } while (islessequal(current_floor.time_to_clean - prev_simu_time,
-                         SIMULATIONS_DELTA)
-            );
+    } while (!(islessequal(fabs(prev_simu_ticks - current_floor.time_to_clean),
+                SIMULATIONS_DELTA)));
 
     destroyFloor(&current_floor);
     return SUCCESS;
 }
-
-/*
- * Difference between two times measured using clock_t.
- *
- * Arguments:
- *  final: Last measured time.
- *  initial: FIrst measured time.
- * 
- * Returns:
- *  The difference between those times as double.
- */
-static double
-elapsedTime(clock_t final, clock_t initial) {
-    return ( ( ((double)final - (double)initial) ) / CLOCKS_PER_SEC );
-}
-
 
 /*
  * Instead of recreating a whole floor, let's make it diry again!
@@ -292,16 +266,4 @@ isFloorClean(struct Floor* floor) {
         i++;
     }
     return tile_status;
-}
-
-void
-printTiles(struct Floor* f) {
-    printf("--------------------------------------------------\n");
-    for (int i = 0; i < f->height; i++) {
-        for (int j = 0; j < f->width; j++) {
-            printf("%d ", f->clean[j + f->height*i]);
-        }
-        putchar('\n');
-    }
-    printf("--------------------------------------------------\n");
 }
