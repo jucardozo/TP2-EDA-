@@ -1,7 +1,8 @@
-#include "AllegroDraw.h"
 
 #include <stdio.h>
 #include <Windows.h>
+
+#include "AllegroDraw.h"
 
 static int drawFloor(struct Floor* floor, void* front_data);
 
@@ -37,7 +38,12 @@ int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font) {
 		printf("Error intializing primitives addon\n");
 		error = 1;
 	}
-	if (!al_init_font_addon()) {
+	if (! al_init_font_addon()) {
+
+		printf("Error initializing font addon\n");
+		error = 1;
+	}
+	if (! al_init_ttf_addon()) {
 
 		printf("Error initializing font addon\n");
 		error = 1;
@@ -47,11 +53,13 @@ int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font) {
 		printf("Error loading display\n");
 		error = 1;
 	}
-	if (!(*font = al_load_font("IBMPlexSerif-Regular.ttf", 50, 0))) {
+
+	if (!(*font = al_load_ttf_font("C:\\Users\\Damian\\source\\repos\\TP2-eda-\\TP2(eda)\\IBMPlexSerif-Regular.ttf", 10, 0) ) ) {
 
 		printf("Error loading font\n");
 		error = 1;
 	}
+
 
 	return error;
 }
@@ -147,9 +155,10 @@ int drawFloor(struct Floor* floor, void* front_data) {
 
 int drawFunction(struct Floor* floor, void* front_data) {
 
+	char aux_str[20];	//String that's being used to write letters and numbers
 	int error = 0;
 	FrontData* p2front_data = (FrontData*)front_data;	//This variables are defined to make the function more readable
-	double* times_recorded = p2front_data->times_recorded;
+	long double* times_recorded = p2front_data->times_recorded;
 
 	if (floor->time_to_clean > 0.1) {	//I won't draw anything until the time is beaten
 
@@ -194,11 +203,12 @@ int drawFunction(struct Floor* floor, void* front_data) {
 
 			al_draw_filled_circle(BORDE_WIDTH + i * x_axis_gap, BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap,
 				4, al_map_rgb(255, 0, 0));
-			//al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,
-			// BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap, ALLEGRO_ALIGN_LEFT, "01235");
-		}
 
-		//al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 4, SCREENHEIGHT / 4, ALLEGRO_ALIGN_LEFT, "01235");
+			_gcvt_s(aux_str, 20*sizeof(char) ,times_recorded[i - 1], 3);
+
+			al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,
+			  BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap + 15, ALLEGRO_ALIGN_LEFT, aux_str );
+		}
 
 		al_flip_display();
 

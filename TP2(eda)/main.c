@@ -12,12 +12,14 @@ int main(int argc, char* argv[]) {
 	}
 
 	ALLEGRO_DISPLAY* disp;
-	ALLEGRO_FONT* font;
+	ALLEGRO_FONT* fontTTF;
 
-	if (initAllegro(&disp, &font)) {
+	if (initAllegro(&disp, &fontTTF)) {
 
 		printf("Error initializing allegro components\n");
 	}
+
+	front_data.font = fontTTF;
 
 	initBackend(argc, argv, publishStatus, &front_data);
 
