@@ -195,7 +195,9 @@ createFloor(struct Floor* floor_p, int width, int height, int robots_amount) {
 
     // All tiles are dirty
     for (int i = 0; i < floor_p->clean_size; i++) {
-        floor_p->clean[i] = TILE_DIRTY;
+        // If you see a warning here, it seems to be a VisualStudio bug :)
+        // https://stackoverflow.com/q/56596885 
+        floor_p->clean[i] = TILE_DIRTY;     
     }
 
     pointer = generateRobots(&(floor_p->robots), robots_amount, max);
@@ -285,10 +287,12 @@ isFloorClean(struct Floor* floor) {
 
 void
 printTiles(struct Floor* f) {
+    printf("--------------------------------------------------\n");
     for (int i = 0; i < f->height; i++) {
         for (int j = 0; j < f->width; j++) {
             printf("%d ", f->clean[j + f->height*i]);
         }
         putchar('\n');
     }
+    printf("--------------------------------------------------\n");
 }
