@@ -4,8 +4,8 @@
 
 #include "Backend.h"
 
-#define SCREENWIDHT 1360
-#define SCREENHEIGHT 768
+#define SCREENWIDHT 1200
+#define SCREENHEIGHT 600
 #define BORDE_WIDTH	25
 
 typedef struct {

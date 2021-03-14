@@ -23,6 +23,7 @@ int initFrontEnd(void* front_data){
 	}
 
 	p2front_data->times_count = 0;
+	return 0;
 }
 
 int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font) {
@@ -70,6 +71,7 @@ int publishStatus(struct Floor* floor, void* front_data) {
 
 		drawFunction(floor, front_data);
 	}
+	return 0;
 }
 
 int drawFloor(struct Floor* floor, void* front_data) {

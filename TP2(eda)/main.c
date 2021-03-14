@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "AllegroDraw.h"
 #include "Backend.h"
 
@@ -16,7 +17,7 @@ int main(int argc, char* argv[]) {
 	if (initAllegro(&disp, &font)) {
 
 		printf("Error initializing allegro components\n");
-	}	
+	}
 
 	initBackend(argc, argv, publishStatus, &front_data);
 
