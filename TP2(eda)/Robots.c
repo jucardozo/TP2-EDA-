@@ -8,6 +8,9 @@
 // Module of the distance a robot can move in a single turn
 #define ROBOT_DISPLACEMENT_MODULE       (1.0)
 
+// Minimum decimal precision taken into account for floats and double
+#define MINIMUM_PRECISION	    (3)
+
 /* In case M_PI is not defined (copied from definition in glibc's math.h file)
  * It seems like some non-POSIX implementations could not have it defined.
  * See:
@@ -23,92 +26,72 @@
 
 /******************** PROTOTYPES ********************/
 static double getRandomAngle(void);
-static struct Position* newCoordinates(struct Position* current, double angle, struct Position* new, double module);
+static coords_t* newCoordinates(coords_t* current, double angle, coords_t* new, double module);
 static long int ipow(unsigned int base, unsigned int exponent);
-static void robotsArr(struct Floor* floor_p);
+static void robotsArr(struct RobotCollection* b1, coords_t max);
 
 /******************** PUBLIC FUNCTIONS ********************/
-void* generateRobots(struct Floor* floor_p, int ammount) {
-    floor_p->robots.robots = malloc(ammount * sizeof(struct Robot));
-    if (floor_p->robots.robots != NULL) {
-        floor_p->robots.robots_number = ammount;            
-        robotsArr(floor_p);                          //create a defined number of robots, giving them random position and direction
-        return floor_p->robots.robots;
+void* generateRobots(struct RobotCollection* b1, int ammount, int floor_width, int floor_height) {
+    if (floor_width == 0 || floor_height == 0)
+        return NULL;
+
+    // B1 Droids... those weren't very smart, were them?
+    b1->robots = malloc(ammount * sizeof(struct Robot));
+    if (b1->robots != NULL) {
+        b1->robots_number = ammount;            
+
+        coords_t floor_limits = { (double)floor_width, (double)floor_height };
+        robotsArr(b1, floor_limits);  //create a defined number of robots, giving them random position and direction
+
+        return b1->robots;
     }
     else{
         return NULL;
     }
 }
 
-int cleanFloor(struct Floor* floor_p) {
-    if (floor_p == NULL)
-        return FAILURE;
-
-    int i = 0;
-    while (i < floor_p->robots.robots_number) {
-        int x = (int) floor(floor_p->robots.robots[i].coordinates.x);
-        int y = (int) floor(floor_p->robots.robots[i].coordinates.y);
-
-        //floor_p->clean[x][y] = TILE_CLEAN; // TODO
-        i++;
-    }
-    return SUCCESS;
+void destroyRobots(struct RobotCollection* b1) {
+    free(b1->robots);
+    b1->robots_number = 0;
 }
 
-int isFloorClean(struct Floor* floor) {
-    if (floor == NULL)
-        return FAILURE;
-
-    int tile_status = TILE_CLEAN;
-    int i = 0;
-    while (i < floor->clean_size && tile_status != TILE_DIRTY) {
-        tile_status = floor->clean[i];
-        i++;
-    }
-    return tile_status;
-}
-
-void * moveRobots(struct Floor* floor) {
-    if (floor == NULL)
+void* moveRobots(struct RobotCollection* b1, coords_t maximum_coordinates){
+    if (b1 == NULL)
         return NULL;
 
-    struct RobotCollection* collection = &(floor->robots);
-    struct Robot* current_robot = NULL;
-    struct Position new_position = { 0.0 };
+    if (maximum_coordinates.x == 0 || maximum_coordinates.y == 0)
+        return NULL;
 
-    int i = 0;
-    while (i < collection->robots_number) {
-        current_robot = &collection->robots[i];
+    struct Robot* current_robot = NULL;
+    coords_t new_position = {0};
+
+    for (int i = 0; i < b1->robots_number; i++) {
+        current_robot = &b1->robots[i];
 
         // Compare with borders using angle
         // Get new angle when collision is inminent
-        if (newCoordinates(&current_robot->coordinates,
-            current_robot->angle,
-            &new_position,
-            ROBOT_DISPLACEMENT_MODULE) == NULL) {
+        if (newCoordinates(&(current_robot->coordinates), current_robot->angle,
+                           &new_position, ROBOT_DISPLACEMENT_MODULE) == NULL) {
             return NULL;
         }
 
         // Does the robot move out of the board?
         if (isless(new_position.x, 0.0)
             || isless(new_position.y, 0.0)
-            || isgreaterequal(new_position.x, (double)floor->width)
-            || isgreaterequal(new_position.y, (double)floor->height)) {
+            || isgreaterequal(new_position.x, maximum_coordinates.x)
+            || isgreaterequal(new_position.y, maximum_coordinates.y)) {
             // YES, it moves out
 
             // Give it a new angle!
             current_robot->angle = getRandomAngle();
-            // And do NOT increment variable i, so its new possible position 
-            // gets calculated again
         }
         else {
             // NO, it doesn't move out
 
-            // Store the new position and go on with another robot
+            // Store the new position and go on
             current_robot->coordinates.x = new_position.x;
             current_robot->coordinates.y = new_position.y;
 
-            i++;
         }
     }
     return floor;
@@ -143,7 +126,7 @@ static double getRandomAngle(void) {
     int decimal = rand() % ipow(10, abs(MINIMUM_PRECISION)); 
 
     // Integer part + decimal part 
-    return (double)(integer + ((double)decimal / ipow(10, abs(MINIMUM_PRECISION))));
+    return (double)(integer + (((double)decimal) / ipow(10, abs(MINIMUM_PRECISION))));
 }
 
 /*
@@ -151,7 +134,7 @@ static double getRandomAngle(void) {
  * 
  * Assumes coordinate system with (0,0) in the top left position and
  *  (width, height) in the bottom right position.
- *  (x is (+) to the west; y is (+) to the south)
+ *  (x is (+) to the est; y is (+) to the south)
  * Assumes angle in degrees.
  *
  * All comparisons are made using comparison macros from math lib
@@ -167,9 +150,8 @@ static double getRandomAngle(void) {
  *  On success: the same pointer given in new argument.
  *  On failure: returns NULL
  */
-static struct Position*
-    newCoordinates(struct Position* current, double angle,
-        struct Position* new, double module) {
+static coords_t *
+newCoordinates(coords_t * current, double angle, coords_t * new, double module) {
 
     if (current == NULL)
         return NULL;
@@ -192,6 +174,30 @@ static struct Position*
     new->x = current->x;
     new->y = current->y;
 
+    /*
+     * Taking into account that 0° is pointing to the North, that x increases 
+     * to the east and y to the south, a graphic to understand which signs to apply
+     * on the arithmetics could be this one:
+     * 
+     * Let 'a' be an angle between the direction vector and the North (0°).
+     * Let 'H' be the module of the direction vector.
+     * Let 'R' be a robor in some coordinatas (x,y) of the board.
+     * 
+     *  -----------------------------------------> x
+     *  |                         /\
+     *  |                    ^    /
+     *  |                    |_a_/    X increases:   H*sin(a) (X is positive to the east)
+     *  |                    |  /     Y increases: - H*cos(a) (Y is negative to the north)
+     *  |             <----- R ----->
+     *  |                    |
+     *  |                    |
+     *  |                   \ /
+     * \ /
+     *  y
+     * 
+     * The same idea can be extrapolated to the other quadrants.
+     * 
+     */
     // 0 <= angle < 90
     if (isless(angle, 90.0)) {
         new->x += module * sin(DEG2RAD(angle));
@@ -221,7 +227,7 @@ static struct Position*
  * 
  * As math library does not provide a pow() function to work with pure 
  * integers, I've made a simple one based on _Exponentiation by squaring_ 
- * method.
+ * method (also known as _binary exponentiation_).
  * See more at: https://en.wikipedia.org/wiki/Exponentiation_by_squaring
  * 
  * Arguments:
@@ -237,15 +243,27 @@ static long int ipow(unsigned int base, unsigned int exponent) {
         return -1;
     }
 
+    if (base == 1) {
+        return 1;
+    }
+
+    if (base == 0) {
+        return 0;
+    }
+
     int result = 1;
     while (1) {
+        // Is exponent odd?
         if (exponent & 1) {
             result *= base;
         }
+
+        // Shift exponent to the left (same as divide by 2)
         exponent >>= 1;
         if (!exponent) {
             break;
         }
+
         base *= base;
     }
 
@@ -253,21 +271,24 @@ static long int ipow(unsigned int base, unsigned int exponent) {
 }
 
 /*
-*Generates an array of struct robots with a quantity passed by the user.
-* 
-*Each robot has a random position and direction (angle). 
-* 
-*In the case of the angle, it is passed by getRandomAngle
-* 
-*Argument: struct Floor*
-* 
-*Returns: none
-* 
+ * Generates an array of struct robots with a quantity passed by the user.
+ * 
+ * Each robot has a random position and direction (angle). 
+ * 
+ * In the case of the angle, it is passed by getRandomAngle
+ * 
+ * Arguments:
+ *  b1: Robots to initialize in a random position.
+ *  max: Maximum coordinates any robot can take.
+ *  
+ * Returns: 
+ *  Nothing
+ * 
 */
-static void robotsArr(struct Floor* floor_p) {
-    for (int limit = 0; limit < floor_p->robots.robots_number; limit++) {
-        floor_p->robots.robots[limit].coordinates.x = (0 + rand() % ((floor_p->width) + 1));            //a random number is assigned between zero and the maximum width value
-        floor_p->robots.robots[limit].coordinates.y = (0 + rand() % ((floor_p->height) + 1));           //a random number is assigned between zero and the maximum height value
-        floor_p->robots.robots[limit].angle = getRandomAngle();
+static void robotsArr(struct RobotCollection* b1, coords_t max) {
+    for (int limit = 0; limit < b1->robots_number; limit++) {
+        b1->robots[limit].coordinates.x = (0 + rand() % ((int) max.x));            //a random number is assigned between zero and the maximum width value
+        b1->robots[limit].coordinates.y = (0 + rand() % ((int) max.y));           //a random number is assigned between zero and the maximum height value
+        b1->robots[limit].angle = getRandomAngle();
     }
 }

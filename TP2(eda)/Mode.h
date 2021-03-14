@@ -1,5 +1,7 @@
-#ifndef MODE_H
-#define MODE_H	1
+#ifndef _MODE_H
+#define _MODE_H	1
+
+#include "Backend.h" /* Floor and statusCallback */
 
 /*************PROTOTYPE****************/
 
@@ -9,16 +11,27 @@
 *graphing the clean and dirty tiles, to the robots and their directions.
 * 
 *Argument:
-*floor :floor to be completed
-* robots _number: number of robots
-* width and height :floor dimensions
+* robots_number: number of robots.
+* width and height :floor dimensions.
+* publishStatus: Frontend callback.
+* front_data: Pointer to pass to the frontend callback.
 * 
 * Returns
 *Success: SUCCESS definition
 *Failure: FAILURE definition
 */
 
-int runModeOne(struct Floor*,int robots_number, int width, int height);
+int runModeOne(int robots_number, int width, int height, statusCallback publishStatus, void * front_data);
 
+/*
+ * Simulate the time needed to clean a floor of size width*height.
+ * 
+ * Arguments:
+ *  width: Floor's width.
+ *  height: Floor's height.
+ *  publishStatus: Frontend callback.
+ *  front_data: Pointer to pass to the frontend callback.
+ */
+int runModeTwo(int width, int height, statusCallback publishStatus, void * front_data);
 
-#endif
+#endif /* _MODE_H */
