@@ -23,11 +23,21 @@ int main(int argc, char* argv[]) {
 	front_data.small_font = smallfont;
 	front_data.big_font = bigfont;
 
-	initBackend(argc, argv, publishStatus, &front_data);
+	if ((initBackend(argc, argv, publishStatus, &front_data)) == FAILURE) {
+
+		printf("Backend failure\n");
+	}
+
+	front_data.times_count++;		//Here is the total number of "robots_number" that has been used
 
 	if (front_data.game_mode == MODE2) {	
 
-		drawFunction2(&front_data);
+		drawFunction(&front_data, front_data.times_count);
+		
+		if (front_data.times_count >= 40) {
+
+			drawFunction(&front_data, front_data.times_count/2);
+		}
 	}
 	else if (front_data.game_mode == MODE1) {		
 
@@ -39,6 +49,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	destroyFrontEnd(&front_data);
+
+	//destroyAllegro(&disp, &smallfont, &bigfont);
 
 	return 0;
 }

@@ -33,12 +33,16 @@ int initFrontEnd(void* front_data);
 /*Initializes all Allegro addons, the display and the font*/
 int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font1, ALLEGRO_FONT** font2);
 
+/*Destroys everything that has been opened by allegro in this program*/
+void destroyAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font1, ALLEGRO_FONT** font2);
+
 /*Destroys the memory allocated previously in the initialization*/
 void destroyFrontEnd(void * front_data);
 
 /*Function that's given as the callback to choose, depending on the mode, which function we are going to call*/
 int publishStatus(struct Floor* floor, void* front_data);
 
+/*Draws in screen the final time that the mode 1 simulation lasted*/
 void drawFinalTime(FrontData *front_data);
 
-int drawFunction2(FrontData * front_data);
+void drawFunction(FrontData * front_data, int max_data);
