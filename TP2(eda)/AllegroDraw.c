@@ -4,9 +4,24 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <Windows.h>
 
 #include "AllegroDraw.h"
+
+ /*******************************************************************************
+  * DEFINITIONS AND MACROS
+  ******************************************************************************/
+ /* In case M_PI is not defined (copied from definition in glibc's math.h file)
+  * It seems like some non-POSIX implementations could not have it defined.
+  * See:
+  * https://stackoverflow.com/questions/9912151/math-constant-pi-value-in-c#comment12648210_9912169
+  */
+#ifndef M_PI
+#define M_PI            3.14159265358979323846 /* pi */
+#endif
+  // Convert Degrees to Radians
+#define DEG2RAD(d)				((d)*(M_PI/180))
 
  /*******************************************************************************
   * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -18,6 +33,11 @@ static int drawFloor(struct Floor* floor, void* front_data);
 
 /*Uses allegro to draw the final function given all the data*/
 static int drawFunction(struct Floor* floor, void* front_data);
+
+/* Given an angle and modulus, get a point relative to the one called center. */
+static coords_t directionVectorPosition(coords_t center, double angle, double modulus);
+/* Draw a single robot over the floor */
+static void  drawRobot(coords_t center, double angle, float tile_width, float tile_height);
 
 /*******************************************************************************
  *******************************************************************************
@@ -118,9 +138,6 @@ int drawFloor(struct Floor* floor, void* front_data) {
 	int horizontal_gap = SCREENWIDHT / w;	//Gap between columns
 	int vertical_gap = SCREENHEIGHT / h;		//Gap between rows
 
-	double x;	//Variables that will be used in the drawing of the robots
-	double y;
-
 	int dist_lat_border = (SCREENWIDHT - horizontal_gap * w) / 2 + BORDE_WIDTH;	//I define this to center the floor in the display
 	int dist_vert_border = (SCREENHEIGHT - vertical_gap * h) / 2 + BORDE_WIDTH;
 
@@ -156,15 +173,12 @@ int drawFloor(struct Floor* floor, void* front_data) {
 		al_draw_line(dist_lat_border + i * horizontal_gap, dist_vert_border, dist_lat_border + i * horizontal_gap, dist_vert_border + SCREENWIDHT, al_map_rgb(0, 0, 0), -1);
 	}
 
-	
-	for (int i = 0; i<floor->robots.robots_number; i++){
-
-		x = (floor->robots.robots[i]).coordinates.x;
-		y = (floor->robots.robots[i]).coordinates.y;
-
-		al_draw_filled_circle(x*horizontal_gap + (SCREENWIDHT - horizontal_gap * w) / 2 + BORDE_WIDTH,
-			y*vertical_gap + (SCREENHEIGHT - vertical_gap * h) / 2 + BORDE_WIDTH ,
-			6, al_map_rgb(0,230,255) );
+	for (int i = 0; i < floor->robots.robots_number; i++) {
+		coords_t center = {
+			.x = floor->robots.robots[i].coordinates.x * horizontal_gap + (SCREENWIDHT - horizontal_gap * w) / 2 + BORDE_WIDTH,
+			.y = floor->robots.robots[i].coordinates.y * vertical_gap + (SCREENHEIGHT - vertical_gap * h) / 2 + BORDE_WIDTH
+		};
+		drawRobot(center, floor->robots.robots[i].angle, horizontal_gap, vertical_gap);
 	}
 
 	al_flip_display();
@@ -241,13 +255,15 @@ int drawFunction2(FrontData * front_data){
 	Sleep(50000);
 }
 
-void drawFinalTime(FrontData *front_data) {
-
-	char str[20];
+void drawFinalTime(FrontData* front_data) {
+	char str_size = 20;
+	char * str = malloc(str_size * sizeof(char));
+	if (str == NULL)
+		return;
 
 	al_clear_to_color(al_map_rgb(255, 255, 255));
 
-	_itoa_s(front_data->times_count, 20, str, 10);
+	_itoa_s(front_data->times_count, str, str_size, 10);
 
 	al_draw_text(front_data->big_font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2 - 250, SCREENHEIGHT / 2 - 50, 0, "TICKS TOTALES");
 	al_draw_text(front_data->big_font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2 - 150, SCREENHEIGHT / 2 + 50, 0, str);
@@ -255,4 +271,57 @@ void drawFinalTime(FrontData *front_data) {
 	al_flip_display();
 
 	Sleep(5000);
+}
+
+static void drawRobot(coords_t center, double angle, float tile_width, float tile_height) {
+	// Maximum radius of a robot
+	float outer_radius = floor(min(tile_width / 2, tile_height / 2)) * 3 / 4;
+
+	double eyes_offset = outer_radius / 3;
+	double eyes_radius = outer_radius / 5;
+
+	// Border
+	al_draw_filled_circle(center.x, center.y, outer_radius, al_map_rgb(0, 0, 0));
+	// Inner
+	al_draw_filled_circle(center.x, center.y, outer_radius - 1, al_map_rgb(128, 128, 128));
+
+	// Eyes
+	coords_t eyes_middle_point = directionVectorPosition(center, angle, outer_radius / 3);
+
+	al_draw_filled_circle(eyes_middle_point.x - eyes_offset,
+		eyes_middle_point.y - eyes_offset,
+		eyes_radius, al_map_rgb(200, 0, 0));
+	al_draw_filled_circle(eyes_middle_point.x + eyes_offset,
+		eyes_middle_point.y + eyes_offset,
+		eyes_radius, al_map_rgb(200, 0, 0));
+}
+
+static coords_t directionVectorPosition(coords_t center, double angle, double modulus) {
+	coords_t new_coords = { .x = center.x, .y = center.y };
+
+	if (isless(angle, 0.0)) {
+		angle = 360 - angle;
+	}
+
+	// 0 <= angle < 90
+	if (isless(angle, 90.0)) {
+		new_coords.x += modulus * sin(DEG2RAD(angle));
+		new_coords.y -= modulus * cos(DEG2RAD(angle));
+	}
+	// 90 <= angle < 180
+	else if (isless(angle, 180.0)) {
+		new_coords.x += modulus * sin(DEG2RAD(angle - 90));
+		new_coords.y += modulus * cos(DEG2RAD(angle - 90));
+	}
+	// 180 <= angle < 270
+	else if (isless(angle, 270.0)) {
+		new_coords.x -= modulus * sin(DEG2RAD(angle - 180));
+		new_coords.y += modulus * cos(DEG2RAD(angle - 180));
+	}
+	// 270 <= angle < 360
+	else if (isless(angle, 360.0)) {
+		new_coords.x -= modulus * sin(DEG2RAD(angle - 270));
+		new_coords.y -= modulus * cos(DEG2RAD(angle - 270));
+	}
+	return new_coords;
 }
