@@ -12,6 +12,12 @@
  /*******************************************************************************
   * DEFINITIONS AND MACROS
   ******************************************************************************/
+
+#define COLOR_MODE1_BACKGROUND	(al_map_rgb(255, 255, 255))	// White
+#define COLOR_TILE_DIRTY		(al_map_rgb(131, 86, 86))	// Brown
+#define COLOR_TILE_CLEAN		(al_map_rgb(255, 255, 255))	// White
+#define COLOR_TILE_SEPARETOR	(al_map_rgb(0, 0, 0))		// Black
+
  /* In case M_PI is not defined (copied from definition in glibc's math.h file)
   * It seems like some non-POSIX implementations could not have it defined.
   * See:
@@ -39,6 +45,10 @@ static coords_t directionVectorPosition(coords_t center, double angle, double mo
 /* Draw a single robot over the floor */
 static void  drawRobot(coords_t center, double angle, float tile_width, float tile_height);
 
+static void checkKeys(FrontData* fd);
+
+
+
 /*******************************************************************************
  *******************************************************************************
 							FUNCTION DEFINITIONS
@@ -51,7 +61,22 @@ int initFrontEnd(void* front_data){
 
 	FrontData* p2front_data = (FrontData*) front_data;
 
-	p2front_data->times_recorded = (long double*)malloc(50 * sizeof(long double));	//Here is where I'm going to save the times that are entered
+	p2front_data->times_count = 0;
+	p2front_data->robots_used = 0;
+
+	p2front_data->game_mode = MODE_UNSET;
+	p2front_data->evqueue = NULL;
+	p2front_data->timer.main = NULL;
+	p2front_data->timer.animations = NULL;
+	p2front_data->small_font = NULL;
+	p2front_data->big_font = NULL;
+	p2front_data->disp = NULL;
+
+	p2front_data->request.exit = 0;
+	p2front_data->request.restart = 0;
+	p2front_data->request.lock_front = 0; // Managed in gatherBackendData
+
+	p2front_data->times_recorded = (long double*) calloc(50, sizeof(long double));	//Here is where I'm going to save the times that are entered
 
 	if (p2front_data->times_recorded == NULL) {
 
@@ -59,11 +84,42 @@ int initFrontEnd(void* front_data){
 		printf("Error allocating memory for front_data\n");
 		error = FAILURE;
 	}
-
-	p2front_data->times_count = 0;
+	
+	p2front_data->keyboard_keys = (unsigned char*) calloc(ALLEGRO_KEY_MAX, sizeof(unsigned char));
+	if (p2front_data->keyboard_keys == NULL) {
+		printf("(Chuckles) I'm in danger\n");
+		printf("Error allocating memory for front_data\n");
+		error = FAILURE;
+	}
 
 	return error;
 }
+
+int restartFrontEnd(FrontData* fd) {
+	al_stop_timer(fd->timer.main);
+	al_stop_timer(fd->timer.animations);
+
+	fd->game_mode = MODE_UNSET;
+	fd->robots_used = 0;
+
+	fd->request.exit = 0;
+	fd->request.restart = 0;
+	fd->request.lock_front = 0; // Managed in gatherBackendData
+
+	for (int i = 0; i < fd->times_count; i++)
+	{
+		fd->times_recorded[i] = 0.0;
+	}
+	fd->times_count = 0;
+	
+	for (int i = 0; i < ALLEGRO_KEY_MAX; i++)
+	{
+		fd->keyboard_keys[i] = 0;
+	}
+
+	return 0;
+}
+
 
 int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font1, ALLEGRO_FONT** font2) {
 
@@ -74,6 +130,10 @@ int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font1, ALLEGRO_FONT** fon
 	if (!al_init_primitives_addon()) {
 
 		printf("Error intializing primitives addon\n");
+		error = 1;
+	}
+	if (!al_install_keyboard()) {
+		printf("Error initializing keyboard.\n");
 		error = 1;
 	}
 	if (! al_init_font_addon()) {
@@ -106,42 +166,62 @@ int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font1, ALLEGRO_FONT** fon
 	return error;
 }
 
-void destroyFrontEnd(void * front_data){
+void destroyFrontEnd(FrontData * front_data){
 
-	FrontData* p2front_data = (FrontData*)front_data;
+	if (front_data == NULL)
+		return;
 
-	al_destroy_font(p2front_data->small_font);
-	al_destroy_font(p2front_data->big_font);
-	free(p2front_data->times_recorded);
+	if (front_data->disp != NULL) al_destroy_display(front_data->disp);
+
+	if (front_data->small_font != NULL) al_destroy_font(front_data->small_font);
+	if (front_data->big_font != NULL) al_destroy_font(front_data->big_font);
+
+	al_uninstall_keyboard();
+	if (front_data->evqueue != NULL) al_destroy_event_queue(front_data->evqueue);
+	if (front_data->timer.main != NULL) al_destroy_timer(front_data->timer.main);
+
+	free(front_data->times_recorded);
+	free(front_data->keyboard_keys);
 }
 
-void destroyAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font1, ALLEGRO_FONT** font2) {
+int gatherBackendData(struct Floor* floor, void* front_data) {
+	if (floor == NULL || front_data == NULL)
+		return 1;
 
-	al_destroy_display(*disp);
+	FrontData* fd = (FrontData*)front_data;
+	fd->game_mode = floor->game_mode;
 
-	al_destroy_font(*font1);
-
-	al_destroy_font(*font2);
-
-}
-
-int publishStatus(struct Floor* floor, void* front_data) {
-
-	if (floor->game_mode == 1) {
-
-		drawFloor(floor, front_data);
+	if (floor->game_mode == MODE1) {
+		fd->robots_used = floor->robots.robots_number;
+		fd->times_count = (int)floor->time_to_clean;
+		fd->request.lock_front = 1;
 	}
-	else if (floor->game_mode == 2) {
+	else if (floor->game_mode == MODE2) {
 
 		recordDataFunction(floor, front_data);
 	}
+
+	do {
+		manageEvents(floor, (FrontData*)front_data);
+	} while (fd->request.lock_front > 0);
+
+	if (fd->request.exit || fd->request.restart)
+	{
+		return 1;
+	}
+
 	return 0;
 }
 
-void drawFloor(struct Floor* floor, void* front_data) {
+static void drawFloor(struct Floor* floor, void* front_data) {
+	if (front_data == NULL)
+		return;
+	if (floor == NULL)
+		return; 
 
-	((FrontData*)front_data)->game_mode = floor->game_mode;	//I initialize data that has to be given to the main
-	((FrontData*)front_data)->times_count = (int)floor->time_to_clean;
+	if (((FrontData *) front_data)->request.exit)
+		return;
+
 
 	int w = floor->width;
 	int h = floor->height;
@@ -152,36 +232,40 @@ void drawFloor(struct Floor* floor, void* front_data) {
 	int dist_lat_border = (SCREENWIDHT - horizontal_gap * w) / 2 + BORDE_WIDTH;	//I define this to center the floor in the display
 	int dist_vert_border = (SCREENHEIGHT - vertical_gap * h) / 2 + BORDE_WIDTH;
 
-	al_clear_to_color(al_map_rgb(0, 0, 0));
+	// Background
+	al_clear_to_color(al_map_rgb(255, 255, 255));
 	al_draw_filled_rectangle(dist_lat_border,
 		dist_vert_border,
 		dist_lat_border + horizontal_gap * w,
 		dist_vert_border + vertical_gap * h,
-		al_map_rgb(255, 255, 255)
+		COLOR_MODE1_BACKGROUND
 	);
 
 	for (int i = 0; i < h; i++) {
-
 		for (int j = 0; j < w; j++) {
-
+			ALLEGRO_COLOR tile_color = al_map_rgb(0,0,0);
 			if ((floor->clean)[i * w + j] == TILE_DIRTY) {	//If the tile is dirty I print a brown rectangle
-
-				al_draw_filled_rectangle(dist_lat_border + j * horizontal_gap, dist_vert_border + i * vertical_gap, dist_lat_border + (j + 1) * horizontal_gap, dist_vert_border + (i + 1) * vertical_gap, al_map_rgb(131, 86, 86));
+				tile_color = COLOR_TILE_DIRTY;
 			}
 			else if ((floor->clean)[i * w + j] == TILE_CLEAN) {	//If the tile is clean I print a white rectangle
-
-				al_draw_filled_rectangle(dist_lat_border + j * horizontal_gap, dist_vert_border + i * vertical_gap, dist_lat_border + (j + 1) * horizontal_gap, dist_vert_border + (i + 1) * vertical_gap, al_map_rgb(255, 255, 255));
+				tile_color = COLOR_TILE_CLEAN;
 			}
+			al_draw_filled_rectangle(dist_lat_border + j * horizontal_gap, dist_vert_border + i * vertical_gap, 
+									dist_lat_border + (j + 1) * horizontal_gap, dist_vert_border + (i + 1) * vertical_gap, 
+									tile_color);
 		}
 	}
+	for (int i = 0; i <= h; i++) {	//I draw the horizontal lines of the tiles
 
-	for (int i = 0; i < h; i++) {	//I draw the horizontal lines of the tiles
-
-		al_draw_line(dist_lat_border, dist_vert_border + i * vertical_gap, dist_lat_border + SCREENWIDHT, dist_vert_border + i * vertical_gap, al_map_rgb(0, 0, 0), -1);
+		al_draw_line(dist_lat_border, dist_vert_border + i * vertical_gap,
+			dist_lat_border + SCREENWIDHT, dist_vert_border + i * vertical_gap,
+			COLOR_TILE_SEPARETOR, -1);
 	}
-	for (int i = 0; i < w; i++) {	//I draw the vertical lines of the tiles
+	for (int i = 0; i <= w; i++) {	//I draw the vertical lines of the tiles
 
-		al_draw_line(dist_lat_border + i * horizontal_gap, dist_vert_border, dist_lat_border + i * horizontal_gap, dist_vert_border + SCREENWIDHT, al_map_rgb(0, 0, 0), -1);
+		al_draw_line(dist_lat_border + i * horizontal_gap, dist_vert_border, 
+			dist_lat_border + i * horizontal_gap, dist_vert_border + SCREENHEIGHT, 
+			COLOR_TILE_SEPARETOR, -1);
 	}
 
 	for (int i = 0; i < floor->robots.robots_number; i++) {
@@ -193,11 +277,17 @@ void drawFloor(struct Floor* floor, void* front_data) {
 	}
 
 	al_flip_display();
-
-	Sleep(200);
+	//Sleep(200);
 }
 
-void recordDataFunction(struct Floor* floor, void* front_data) {
+static void recordDataFunction(struct Floor* floor, void* front_data) {
+	if (front_data == NULL)
+		return;
+	if (floor == NULL)
+		return; 
+
+	if (((FrontData *) front_data)->request.exit)
+		return;
 
 	FrontData* p2front_data = (FrontData*)front_data;	//This variables are defined to make the function more readable
 	long double* times_recorded = p2front_data->times_recorded;
@@ -216,6 +306,11 @@ void recordDataFunction(struct Floor* floor, void* front_data) {
 }
 
 void drawFunction(FrontData * front_data, int max_data){
+	if (front_data == NULL)
+		return;
+
+	if (((FrontData *) front_data)->request.exit)
+		return;
 
 	char aux_str[20];	//String that's being used to write letters and numbers
 
@@ -260,21 +355,18 @@ void drawFunction(FrontData * front_data, int max_data){
 }
 
 void drawFinalTime(FrontData* front_data) {
-	char str_size = 20;
-	char * str = malloc(str_size * sizeof(char));
-	if (str == NULL)
-		return;
-
 	al_clear_to_color(al_map_rgb(255, 255, 255));
 
-	_itoa_s(front_data->times_count, str, str_size, 10);
 
-	al_draw_text(front_data->big_font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2 + BORDE_WIDTH , SCREENHEIGHT / 2 - 50, ALLEGRO_ALIGN_CENTRE, "TICKS TOTALES");
-	al_draw_text(front_data->big_font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2 + BORDE_WIDTH, SCREENHEIGHT / 2 + BORDE_WIDTH*3, ALLEGRO_ALIGN_CENTRE, str);
+	al_draw_multiline_textf(front_data->big_font, al_map_rgb(0, 0, 0),
+		SCREENWIDHT / 2 + BORDE_WIDTH , SCREENHEIGHT / 4 , 
+		SCREENWIDHT - BORDE_WIDTH*2, 0,
+		ALLEGRO_ALIGN_CENTRE, 
+		"%d TICKS WERE NEEDED TO CLEAN THIS FLOOR...\nUSING JUST %d ROBOTS!",
+		front_data->times_count, front_data->robots_used);
 
 	al_flip_display();
 
-	free(str);
 
 	Sleep(5000);
 }
@@ -330,4 +422,66 @@ static coords_t directionVectorPosition(coords_t center, double angle, double mo
 		new_coords.y -= modulus * cos(DEG2RAD(angle - 270));
 	}
 	return new_coords;
+}
+
+void
+manageEvents(struct Floor* floor, FrontData* fd) {
+	ALLEGRO_EVENT current_ev;
+
+	al_wait_for_event(fd->evqueue, &current_ev);
+
+	//if (al_get_next_event(fd->evqueue, &current_ev)) {
+		switch (current_ev.type) {
+			case ALLEGRO_EVENT_DISPLAY_CLOSE:
+				fd->request.exit = 1;
+				break;
+
+			case ALLEGRO_EVENT_KEY_DOWN:
+				fd->keyboard_keys[current_ev.keyboard.keycode] = KEY_SEEN | KEY_RELEASED;
+				break;
+			case ALLEGRO_EVENT_KEY_UP:
+				fd->keyboard_keys[current_ev.keyboard.keycode] &= KEY_RELEASED;
+				break;
+			case ALLEGRO_EVENT_TIMER:
+				if (current_ev.timer.source == fd->timer.main) {
+					checkKeys(fd);
+				}
+				if (current_ev.timer.source == fd->timer.animations) {
+					switch (fd->game_mode)
+					{
+						case MODE1:
+							if (floor != NULL) drawFloor(floor, fd);
+							break;
+						default:
+							break;
+					}
+					fd->request.lock_front = !fd->request.lock_front; // Unlock backend
+				}
+				// Mode2 MUST NOT be locked. This is verified just in case
+				if (fd->game_mode == MODE2) {
+					fd->request.lock_front = fd->request.lock_front = 0;
+				}
+
+				break;
+			default:
+				break;
+		}
+//	}
+}
+
+
+static void
+checkKeys(FrontData* fd) {
+	if (fd == NULL) return;
+
+	if (fd->keyboard_keys[ALLEGRO_KEY_Q] == KEY_READY) {
+		fd->keyboard_keys[ALLEGRO_KEY_Q] &= KEY_SEEN; // Clear key
+
+		fd->request.exit = 1;
+	}
+	else if (fd->keyboard_keys[ALLEGRO_KEY_R] == KEY_READY) {
+		fd->keyboard_keys[ALLEGRO_KEY_R] &= KEY_SEEN; // Clear key
+
+		fd->request.restart = 1;
+	}
 }

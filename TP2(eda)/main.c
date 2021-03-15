@@ -4,6 +4,7 @@
 
 int main(int argc, char* argv[]) {
 
+	int backend_return = 0;
 	FrontData front_data;
 
 	if (initFrontEnd(&front_data)) {
@@ -11,46 +12,84 @@ int main(int argc, char* argv[]) {
 		printf("Error initializing front_data\n");
 	}
 
-	ALLEGRO_DISPLAY* disp;
-	ALLEGRO_FONT* smallfont;
-	ALLEGRO_FONT* bigfont;
 
-	if (initAllegro(&disp, &smallfont, &bigfont)) {
+	if (initAllegro(&front_data.disp, &front_data.small_font, &front_data.big_font)) {
 
-		printf("Error initializing allegro components\n");
+		printf("Error initializing Allegro components.\n");
 	}
 
-	front_data.small_font = smallfont;
-	front_data.big_font = bigfont;
-
-	if ((initBackend(argc, argv, publishStatus, &front_data)) == FAILURE) {
-
-		printf("Backend failure\n");
+	// Timers and ev queue
+	front_data.timer.main = al_create_timer(2.0 / FPS);
+	if (front_data.timer.main == NULL) {
+		printf("Error creating timer.\n");
+		destroyFrontEnd(&front_data);
+		return 1;
+	}
+	front_data.timer.animations = al_create_timer(5.0 / FPS); // Change this to speed up MODE1 animations
+	if (front_data.timer.animations == NULL) {
+		printf("Error creating timer.\n");
+		destroyFrontEnd(&front_data);
+		return 1;
 	}
 
-	front_data.times_count++;		//Here is the total number of "robots_number" that has been used
+	front_data.evqueue = al_create_event_queue();
+	if (front_data.evqueue == NULL) {
+		printf("Error creating event queue.\n");
+		destroyFrontEnd(&front_data);
+		return 1;
+	}
+	// Register events
+	// Display
+	al_register_event_source(front_data.evqueue,
+							al_get_display_event_source(front_data.disp));
+	// Keyboard
+	al_register_event_source(front_data.evqueue,
+							al_get_keyboard_event_source());
+	// Timers
+	al_register_event_source(front_data.evqueue,
+							al_get_timer_event_source(front_data.timer.main));
+	al_register_event_source(front_data.evqueue,
+							al_get_timer_event_source(front_data.timer.animations));
 
-	if (front_data.game_mode == MODE2) {	
+	while (!front_data.request.exit) {
+		if(front_data.request.restart) restartFrontEnd(&front_data);
 
-		drawFunction(&front_data, front_data.times_count);
-		
-		if (front_data.times_count >= 40) {
+		al_start_timer(front_data.timer.main);
+		al_start_timer(front_data.timer.animations);
 
-			drawFunction(&front_data, front_data.times_count/2);
+		backend_return = initBackend(argc, argv, gatherBackendData, &front_data);
+		// Only ignore "FAILURE" if restart was requested
+		if(backend_return == FAILURE && !front_data.request.restart) {
+			destroyFrontEnd(&front_data);
+			if (front_data.request.exit) {
+				// User requested exit, so there's no problem here :)
+				return 0;
+			}
+			// BACKEND FAILED FOR SOME REASON! :O
+			return 1;
+		}
+
+		front_data.times_count++;		//Here is the total number of "robots_number" that has been used
+
+		if (front_data.game_mode == MODE2 && !front_data.request.exit && !front_data.request.restart ) {
+
+			drawFunction(&front_data, front_data.times_count);
+
+			if (front_data.times_count >= 40 && !front_data.request.exit && !front_data.request.restart ) {
+
+				drawFunction(&front_data, front_data.times_count / 2);
+			}
+		}
+		else if (front_data.game_mode == MODE1 && !front_data.request.exit && !front_data.request.restart) {
+			drawFinalTime(&front_data);
+
+			while (!front_data.request.exit && !front_data.request.restart)
+			{
+				manageEvents(NULL, &front_data);
+			}
 		}
 	}
-	else if (front_data.game_mode == MODE1) {		
-
-		drawFinalTime(&front_data);
-	}
-	else {
-
-		printf("Error in the game_mode definition\n");
-	}
-
 	destroyFrontEnd(&front_data);
-
-	//destroyAllegro(&disp, &smallfont, &bigfont);
 
 	return 0;
 }

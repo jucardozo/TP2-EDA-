@@ -43,17 +43,18 @@ initBackend(int argc, char* argv[],
 		return FAILURE;
 	}
 
-	if(command_line_input.mode == 1) {
+	if(command_line_input.mode == MODE1 && command_line_input.robots_number > 0) {
 		return runModeOne(command_line_input.robots_number,
 			command_line_input.width, command_line_input.height,
 			publishStatus, front_data);
 	}
-	else if (command_line_input.mode == 2) {
+	else if (command_line_input.mode == MODE2) {
 		return runModeTwo(command_line_input.width, 
 			command_line_input.height,
 			publishStatus, front_data);
 	}
 	else {
+		printHelp();
 		return FAILURE;
 	}
 }
@@ -72,10 +73,10 @@ parseCallback(char* key, char* value, void* userData) {
 	if (!strcmp(key, "Mode")) {
 		switch (atoi(value)) {
 			case 1:
-				args_storage->mode = 1;
+				args_storage->mode = MODE1;
 				break;
 			case 2:
-				args_storage->mode = 2;
+				args_storage->mode = MODE2;
 				break;
 			default:
 				printf("Invalid mode.\n");
@@ -133,7 +134,7 @@ static void printHelp(void) {
 	printf("\tOnly used in mode 1; ignored in mode 2.\n");
 
 	printf("-Width\tFloor witdh.\n");
-	printf("\tInteger greater or equal than zero.\n");
+	printf("\tInteger between 0 and %d.\n", FLOOR_WIDTH);
 	printf("-Height\tFloor height\n");
-	printf("\tInteger greater or equal than zero.\n");
+	printf("\tInteger between 0 and %d.\n", FLOOR_HEIGHT);
 }
