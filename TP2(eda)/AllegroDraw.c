@@ -270,6 +270,8 @@ void drawFinalTime(FrontData* front_data) {
 
 	al_flip_display();
 
+	free(str);
+
 	Sleep(5000);
 }
 
