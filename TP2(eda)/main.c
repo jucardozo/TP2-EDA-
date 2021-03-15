@@ -12,24 +12,30 @@ int main(int argc, char* argv[]) {
 	}
 
 	ALLEGRO_DISPLAY* disp;
-	ALLEGRO_FONT* fontTTF;
+	ALLEGRO_FONT* smallfont;
+	ALLEGRO_FONT* bigfont;
 
-	if (initAllegro(&disp, &fontTTF)) {
+	if (initAllegro(&disp, &smallfont, &bigfont)) {
 
 		printf("Error initializing allegro components\n");
 	}
 
-	front_data.font = fontTTF;
+	front_data.small_font = smallfont;
+	front_data.big_font = bigfont;
 
 	initBackend(argc, argv, publishStatus, &front_data);
 
-	if (1) {	//MODE2
+	if (front_data.game_mode == MODE2) {	
 
 		drawFunction2(&front_data);
 	}
-	else if (0) {		//MODE1
+	else if (front_data.game_mode == MODE1) {		
 
-		//IMPRIMO EL TIEMPO TOTAL EN TICKS, CASTEADO A INT
+		drawFinalTime(&front_data);
+	}
+	else {
+
+		printf("Error in the game_mode definition\n");
 	}
 
 	destroyFrontEnd(&front_data);

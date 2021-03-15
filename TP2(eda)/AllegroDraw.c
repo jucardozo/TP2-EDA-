@@ -1,12 +1,29 @@
+/*******************************************************************************
+ * INCLUDE HEADER FILES
+ ******************************************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <Windows.h>
 
 #include "AllegroDraw.h"
 
+ /*******************************************************************************
+  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
+  ******************************************************************************/
+
+/*Uses allegro to draw the tiles and the robots given which are dirty and which are clean
+	and also the position of every robot*/
 static int drawFloor(struct Floor* floor, void* front_data);
 
+/*Uses allegro to draw the final function given all the data*/
 static int drawFunction(struct Floor* floor, void* front_data);
+
+/*******************************************************************************
+ *******************************************************************************
+							FUNCTION DEFINITIONS
+ *******************************************************************************
+ ******************************************************************************/
 
 int initFrontEnd(void* front_data){
 
@@ -27,7 +44,7 @@ int initFrontEnd(void* front_data){
 	return 0;
 }
 
-int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font) {
+int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font1, ALLEGRO_FONT** font2) {
 
 	int error = 0;
 
@@ -54,12 +71,16 @@ int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font) {
 		error = 1;
 	}
 
-	if (!(*font = al_load_ttf_font("..\\TP2(eda)\\IBMPlexSerif-Regular.ttf", 10, 0) ) ) {
+	if (!(*font1 = al_load_ttf_font("..\\TP2(eda)\\IBMPlexSerif-Regular.ttf", 10, 0) ) ) {
 
-		printf("Error loading font\n");
+		printf("Error loading font1\n");
 		error = 1;
 	}
+	if (!(*font2 = al_load_ttf_font("..\\TP2(eda)\\IBMPlexSerif-Regular.ttf", 80, 0))) {
 
+		printf("Error loading font2\n");
+		error = 1;
+	}
 
 	return error;
 }
@@ -68,7 +89,8 @@ void destroyFrontEnd(void * front_data){
 
 	FrontData* p2front_data = (FrontData*)front_data;
 
-	al_destroy_font(p2front_data->font);
+	al_destroy_font(p2front_data->small_font);
+	al_destroy_font(p2front_data->big_font);
 	free(p2front_data->times_recorded);
 }
 
@@ -86,6 +108,9 @@ int publishStatus(struct Floor* floor, void* front_data) {
 }
 
 int drawFloor(struct Floor* floor, void* front_data) {
+
+	((FrontData*)front_data)->game_mode = floor->game_mode;	//I initialize data that has to be given to the main
+	((FrontData*)front_data)->times_count = (int)floor->time_to_clean;
 
 	int w = floor->width;
 	int h = floor->height;
@@ -119,10 +144,6 @@ int drawFloor(struct Floor* floor, void* front_data) {
 
 				al_draw_filled_rectangle(dist_lat_border + j * horizontal_gap, dist_vert_border + i * vertical_gap, dist_lat_border + (j + 1) * horizontal_gap, dist_vert_border + (i + 1) * vertical_gap, al_map_rgb(255, 255, 255));
 			}
-			else {	//TODO: esto es para debuggear, si no vale 1 ni cero te va a imprimir la baldosa en verde
-
-				al_draw_filled_rectangle(dist_lat_border + j * horizontal_gap, dist_vert_border + i * vertical_gap, dist_lat_border + (j + 1) * horizontal_gap, dist_vert_border + (i + 1) * vertical_gap, al_map_rgb(0, 0, 255));
-			}
 		}
 	}
 
@@ -148,7 +169,7 @@ int drawFloor(struct Floor* floor, void* front_data) {
 
 	al_flip_display();
 
-	Sleep(500);
+	Sleep(200);
 
 	return 0;
 }
@@ -159,15 +180,16 @@ int drawFunction(struct Floor* floor, void* front_data) {
 	FrontData* p2front_data = (FrontData*)front_data;	//This variables are defined to make the function more readable
 	long double* times_recorded = p2front_data->times_recorded;
 
+	p2front_data->game_mode = floor->game_mode;
+
 	printf("%f\n", floor->time_to_clean);
 
 	times_recorded[(p2front_data->times_count)] = floor->time_to_clean;
 	(p2front_data->times_count)++;
 
-	al_clear_to_color(al_map_rgb((p2front_data->times_count) * 5, (p2front_data->times_count) * 5, (p2front_data->times_count) * 5));
+	al_clear_to_color(al_map_rgb((p2front_data->times_count) * 13, (p2front_data->times_count) * 7, (p2front_data->times_count) * 21));
 
-	//al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2, ALLEGRO_ALIGN_LEFT, "SIMULANDO CON");
-	//al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2, SCREENHEIGHT / 2 - 100, ALLEGRO_ALIGN_LEFT, ((p2front_data->times_count)+1) );
+	al_draw_text(p2front_data->big_font, al_map_rgb(0,0,0), SCREENWIDHT/2-200, SCREENHEIGHT/2-50, 0, "SIMULANDO");
 
 	al_flip_display();
 
@@ -210,13 +232,27 @@ int drawFunction2(FrontData * front_data){
 
 		_gcvt_s(aux_str, 20 * sizeof(char), times_recorded[i - 1], 6);
 
-		al_draw_text(p2front_data->font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,
+		al_draw_text(p2front_data->small_font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,
 			BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap - 15, ALLEGRO_ALIGN_LEFT, aux_str);
 	}
 
 	al_flip_display();
 
 	Sleep(50000);
-
 }
 
+void drawFinalTime(FrontData *front_data) {
+
+	char str[20];
+
+	al_clear_to_color(al_map_rgb(255, 255, 255));
+
+	_itoa_s(front_data->times_count, 20, str, 10);
+
+	al_draw_text(front_data->big_font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2 - 250, SCREENHEIGHT / 2 - 50, 0, "TICKS TOTALES");
+	al_draw_text(front_data->big_font, al_map_rgb(0, 0, 0), SCREENWIDHT / 2 - 150, SCREENHEIGHT / 2 + 50, 0, str);
+
+	al_flip_display();
+
+	Sleep(5000);
+}
