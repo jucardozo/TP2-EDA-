@@ -365,8 +365,6 @@ void drawFinalTime(FrontData* front_data) {
 
 	al_flip_display();
 
-
-	Sleep(5000);
 }
 
 static void drawRobot(coords_t center, double angle, float tile_width, float tile_height) {
