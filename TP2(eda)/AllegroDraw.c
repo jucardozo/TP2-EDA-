@@ -343,8 +343,23 @@ void drawFunction(FrontData * front_data, int max_data){
 
 	for (int i = 1 + ((p2front_data->times_count)-max_data); i < (p2front_data->times_count); i++) {
 
-		al_draw_line(BORDE_WIDTH + i * x_axis_gap, +SCREENHEIGHT + BORDE_WIDTH + 10,
+		al_draw_line(BORDE_WIDTH + i * x_axis_gap, SCREENHEIGHT + BORDE_WIDTH + 10,
 			BORDE_WIDTH + i * x_axis_gap, SCREENHEIGHT + BORDE_WIDTH - 10, al_map_rgb(0, 0, 0), 2);
+
+		if (p2front_data->times_count <= 50) {
+
+			if (i == 1 || (i % 2 == 0 && i != ((p2front_data->times_count) - 2)) || i == (p2front_data->times_count) - 1) {
+				al_draw_textf(p2front_data->small_font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap, SCREENHEIGHT + BORDE_WIDTH + 12
+					, ALLEGRO_ALIGN_CENTRE, "%d", i);
+			}
+		}
+		else {
+
+			if (i == 1 || (i % 5 == 0 && i != ((p2front_data->times_count) - 2)) || i == (p2front_data->times_count) - 1) {
+				al_draw_textf(p2front_data->small_font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap, SCREENHEIGHT + BORDE_WIDTH + 12
+					, ALLEGRO_ALIGN_CENTRE, "%d", i);
+			}
+		}
 	}
 	for (int i = 1 + ((p2front_data->times_count)-max_data); i < (p2front_data->times_count); i++) {
 
@@ -358,9 +373,20 @@ void drawFunction(FrontData * front_data, int max_data){
 			4, al_map_rgb(255, 0, 0));
 
 		_gcvt_s(aux_str, 20 * sizeof(char), times_recorded[i - 1], 3);
-		if (i == 1 || ( i%2== 0 && i != ((p2front_data->times_count) - 2 )) || i == (p2front_data->times_count)-1 ) { //I only print the first one, the even ones and the last one
-			al_draw_text(p2front_data->small_font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,					//I don't print the time previous to last one
-				BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap - 15, ALLEGRO_ALIGN_CENTRE, aux_str);
+
+		if (p2front_data->times_count <= 50) {
+
+			if (i == 1 || (i % 2 == 0 && i != ((p2front_data->times_count) - 2)) || i == (p2front_data->times_count) - 1) { //I only print the first one, the even ones and the last one
+				al_draw_text(p2front_data->small_font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,					//I don't print the time previous to last one
+					BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap - 15, ALLEGRO_ALIGN_CENTRE, aux_str);
+			}
+		}
+		else {
+
+			if (i == 1 || (i %5 == 0 && i != ((p2front_data->times_count) - 2)) || i == (p2front_data->times_count) - 1) { //I only print the first one, the multiplos de 4 and the last one
+				al_draw_text(p2front_data->small_font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,					//I don't print the time previous to last one
+					BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap - 15, ALLEGRO_ALIGN_CENTRE, aux_str);
+			}
 		}
 	}
 
