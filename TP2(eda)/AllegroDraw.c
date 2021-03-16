@@ -295,20 +295,20 @@ static void recordDataFunction(struct Floor* floor, void* front_data) {
 	FrontData* p2front_data = (FrontData*)front_data;	//This variables are defined to make the function more readable
 
 	if (p2front_data->times_count >= INITIAL_GUESS_FOR_TIMES_RECORDED - 1) {
-		long double* tmp = (long double*)realloc(p2front_data->times_recorded, p2front_data->times_count + 2);
+		long double* tmp = (long double*)realloc(p2front_data->times_recorded, sizeof(long double)*(p2front_data->times_count + 2) );
 		if (tmp == NULL) {
 			p2front_data->request.exit = 1;
 			printf("Error reallocating memory :(\n");
 			return;
 		}
 		p2front_data->times_recorded = tmp;
-		p2front_data->times_recorded[p2front_data->times_count+1] = 0.0;
+		//(p2front_data->times_recorded)[ (p2front_data->times_count)+1] = 0.0;
 	}
 	long double* times_recorded = p2front_data->times_recorded;
 
 	p2front_data->game_mode = floor->game_mode;
 
-	times_recorded[(p2front_data->times_count)] = floor->time_to_clean;
+	(p2front_data->times_recorded)[p2front_data->times_count] = floor->time_to_clean;
 	(p2front_data->times_count)++;
 
 	al_clear_to_color(al_map_rgb((p2front_data->times_count) * 13, (p2front_data->times_count) * 7, (p2front_data->times_count) * 21));
@@ -358,8 +358,8 @@ void drawFunction(FrontData * front_data, int max_data){
 			4, al_map_rgb(255, 0, 0));
 
 		_gcvt_s(aux_str, 20 * sizeof(char), times_recorded[i - 1], 3);
-		if (i == 1 || i%2== 0 || i == (p2front_data->times_count)-1 ) {
-			al_draw_text(p2front_data->small_font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,
+		if (i == 1 || ( i%2== 0 && i != ((p2front_data->times_count) - 2 )) || i == (p2front_data->times_count)-1 ) { //I only print the first one, the even ones and the last one
+			al_draw_text(p2front_data->small_font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,					//I don't print the time previous to last one
 				BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap - 15, ALLEGRO_ALIGN_CENTRE, aux_str);
 		}
 	}
