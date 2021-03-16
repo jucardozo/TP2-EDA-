@@ -233,7 +233,7 @@ static void drawFloor(struct Floor* floor, void* front_data) {
 	int dist_vert_border = (SCREENHEIGHT - vertical_gap * h) / 2 + BORDE_WIDTH;
 
 	// Background
-	al_clear_to_color(al_map_rgb(255, 255, 255));
+	al_clear_to_color(al_map_rgb(0, 0, 0));
 	al_draw_filled_rectangle(dist_lat_border,
 		dist_vert_border,
 		dist_lat_border + horizontal_gap * w,
@@ -299,7 +299,7 @@ static void recordDataFunction(struct Floor* floor, void* front_data) {
 
 	al_clear_to_color(al_map_rgb((p2front_data->times_count) * 13, (p2front_data->times_count) * 7, (p2front_data->times_count) * 21));
 
-	al_draw_text(p2front_data->big_font, al_map_rgb(0,0,0), SCREENWIDHT/2 + BORDE_WIDTH, SCREENHEIGHT/2 - 50, ALLEGRO_ALIGN_CENTRE, "SIMULANDO");
+	al_draw_text(p2front_data->big_font, al_map_rgb(0,0,0), SCREENWIDHT/2 + BORDE_WIDTH, SCREENHEIGHT/2 - 50, ALLEGRO_ALIGN_CENTRE, "SIMULATING");
 
 	al_flip_display();
 
@@ -350,8 +350,6 @@ void drawFunction(FrontData * front_data, int max_data){
 	}
 
 	al_flip_display();
-
-	Sleep(5000);
 }
 
 void drawFinalTime(FrontData* front_data) {
