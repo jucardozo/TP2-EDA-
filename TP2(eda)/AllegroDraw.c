@@ -344,9 +344,10 @@ void drawFunction(FrontData * front_data, int max_data){
 			4, al_map_rgb(255, 0, 0));
 
 		_gcvt_s(aux_str, 20 * sizeof(char), times_recorded[i - 1], 3);
-
-		al_draw_text(p2front_data->small_font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,
-			BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap - 15, ALLEGRO_ALIGN_CENTRE, aux_str);
+		if (i == 1 || i%2== 0 || i == (p2front_data->times_count)-1 ) {
+			al_draw_text(p2front_data->small_font, al_map_rgb(0, 0, 0), BORDE_WIDTH + i * x_axis_gap,
+				BORDE_WIDTH + SCREENHEIGHT - times_recorded[i - 1] * y_axis_gap - 15, ALLEGRO_ALIGN_CENTRE, aux_str);
+		}
 	}
 
 	al_flip_display();
