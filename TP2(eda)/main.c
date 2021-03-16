@@ -75,9 +75,9 @@ int main(int argc, char* argv[]) {
 
 			drawFunction(&front_data, front_data.times_count);
 
-			if (front_data.times_count >= 40 && !front_data.request.exit && !front_data.request.restart ) {
-
-				drawFunction(&front_data, front_data.times_count / 2);
+			while (!front_data.request.exit && !front_data.request.restart)
+			{
+				manageEvents(NULL, &front_data);
 			}
 
 			while (!front_data.request.exit && !front_data.request.restart)
@@ -86,6 +86,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		else if (front_data.game_mode == MODE1 && !front_data.request.exit && !front_data.request.restart) {
+
 			drawFinalTime(&front_data);
 
 			while (!front_data.request.exit && !front_data.request.restart)
