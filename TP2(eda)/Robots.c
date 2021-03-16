@@ -61,7 +61,7 @@ moveRobots(struct RobotCollection* b1, coords_t maximum_coordinates){
     if (b1 == NULL)
         return NULL;
 
-    if (maximum_coordinates.x == 0 || maximum_coordinates.y == 0)
+    if (islessequal(maximum_coordinates.x, 0.0) || islessequal(maximum_coordinates.y, 0.0))
         return NULL;
 
     struct Robot* current_robot = NULL;

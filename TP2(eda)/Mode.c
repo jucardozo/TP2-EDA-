@@ -168,22 +168,19 @@ createFloor(struct Floor* floor_p, int width, int height, int robots_amount) {
     coords_t max = { .x = (double)width, .y = (double)height };
     srand((unsigned int)time(NULL)); // For robots :)
 
-    floor_p->clean = (int*)malloc((height * width) * sizeof(int));				//an order is placed for a memory segment
+    floor_p->clean = (int*) calloc(height*width, sizeof(int));				//an order is placed for a memory segment
     if (floor_p->clean == NULL) {//if returns NULL then the memory segment could not be allocated,otherwise it will contain the segment address
         destroyFloor(floor_p);
         return NULL;
     }
-
+    floor_p->clean_size = height*width;
 
     floor_p->height = height;
     floor_p->width = width;
-    floor_p->clean_size = (height*width);
     floor_p->time_to_clean = 0;							//initially since the time was not calculated, it is zero
 
     // All tiles are dirty
     for (int i = 0; i < floor_p->clean_size; i++) {
-        // If you see a warning here, it seems to be a VisualStudio bug :)
-        // https://stackoverflow.com/q/56596885 
         floor_p->clean[i] = TILE_DIRTY;     
     }
 
