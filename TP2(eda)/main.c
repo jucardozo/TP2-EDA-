@@ -51,11 +51,11 @@ int main(int argc, char* argv[]) {
 	al_register_event_source(front_data.evqueue,
 							al_get_timer_event_source(front_data.timer.animations));
 
+	al_start_timer(front_data.timer.main);
+	al_start_timer(front_data.timer.animations);
 	while (!front_data.request.exit) {
 		if(front_data.request.restart) restartFrontEnd(&front_data);
 
-		al_start_timer(front_data.timer.main);
-		al_start_timer(front_data.timer.animations);
 
 		backend_return = initBackend(argc, argv, gatherBackendData, &front_data);
 		// Only ignore "FAILURE" if restart was requested

@@ -107,6 +107,7 @@ runModeTwo(int width, int height, statusCallback publishStatus, void* front_data
         current_floor.time_to_clean = ticks_sum / SIMULATION_ITERATIONS;
         
         if (publishStatus(&current_floor, front_data)) {
+            destroyFloor(&current_floor);
             return FAILURE;
         }
 
@@ -165,11 +166,14 @@ createFloor(struct Floor* floor_p, int width, int height, int robots_amount) {
 
     void* pointer;
     coords_t max = { .x = (double)width, .y = (double)height };
-    srand((unsigned int) time(NULL)); // For robots :)
+    srand((unsigned int)time(NULL)); // For robots :)
 
-    floor_p->clean = malloc((height * width) * sizeof(int));				//an order is placed for a memory segment
-    if (floor_p->clean == NULL) //if returns NULL then the memory segment could not be allocated,otherwise it will contain the segment address
+    floor_p->clean = (int*)malloc((height * width) * sizeof(int));				//an order is placed for a memory segment
+    if (floor_p->clean == NULL) {//if returns NULL then the memory segment could not be allocated,otherwise it will contain the segment address
+        destroyFloor(floor_p);
         return NULL;
+    }
+
 
     floor_p->height = height;
     floor_p->width = width;
@@ -185,8 +189,10 @@ createFloor(struct Floor* floor_p, int width, int height, int robots_amount) {
 
     pointer = generateRobots(&(floor_p->robots), robots_amount, max);
 
-    if (pointer == NULL)							//if it points to null then the robots could not be created
+    if (pointer == NULL) {							//if it points to null then the robots could not be created
+        destroyFloor(floor_p);
         return NULL;
+    }
     
     return floor_p;
 }
@@ -205,15 +211,15 @@ destroyFloor(struct Floor* floor_p){
     if (floor_p == NULL)
         return;
 
+    if (floor_p->clean != NULL) free(floor_p->clean);
+    floor_p->clean_size = 0;
+
     floor_p->game_mode = MODE_UNSET;
     floor_p->height = 0;
     floor_p->width = 0;
-    floor_p->clean_size = 0;
     floor_p->time_to_clean = 0;
 
     destroyRobots(&(floor_p->robots));
-
-    if (floor_p->clean != NULL) free(floor_p->clean);
 }
 
 /*

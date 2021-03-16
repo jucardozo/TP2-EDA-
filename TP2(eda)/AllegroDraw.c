@@ -99,8 +99,8 @@ int initFrontEnd(void* front_data){
 }
 
 int restartFrontEnd(FrontData* fd) {
-	al_stop_timer(fd->timer.main);
-	al_stop_timer(fd->timer.animations);
+	//al_stop_timer(fd->timer.main);
+	//al_stop_timer(fd->timer.animations);
 
 	fd->game_mode = MODE_UNSET;
 	fd->robots_used = 0;
@@ -155,15 +155,29 @@ int initAllegro(ALLEGRO_DISPLAY** disp, ALLEGRO_FONT** font1, ALLEGRO_FONT** fon
 		error = 1;
 	}
 
-	if (!(*font1 = al_load_ttf_font("..\\TP2(eda)\\IBMPlexSerif-Regular.ttf", 10, 0) ) ) {
+	/* Sometimes, Allegro allocates the two fonts in the same memory address and 
+	 * later fails when trying to use one of these.
+	 * We'll try 5 times to allocate this fonts in different portions of memory
+	 */
+	int try = 0;
+	do {
+		if (*font1 != NULL) al_destroy_font(*font1);
+		if (*font2 != NULL) al_destroy_font(*font2);
 
-		printf("Error loading font1\n");
-		error = 1;
-	}
-	if (!(*font2 = al_load_ttf_font("..\\TP2(eda)\\IBMPlexSerif-Regular.ttf", 80, 0))) {
+		if (!(*font1 = al_load_ttf_font("..\\TP2(eda)\\IBMPlexSerif-Regular.ttf", 10, 0))) {
 
-		printf("Error loading font2\n");
-		error = 1;
+			printf("Error loading font1\n");
+			error = 1;
+		}
+		if (!(*font2 = al_load_ttf_font("..\\TP2(eda)\\IBMPlexSerif-Regular.ttf", 80, 0))) {
+
+			printf("Error loading font2\n");
+			error = 1;
+		}
+		try++;
+	} while (try <= 5  && *font2 == *font1 && !error);
+	if (*font1 == *font2) {
+			error = 1;
 	}
 
 	return error;
@@ -182,6 +196,7 @@ void destroyFrontEnd(FrontData * front_data){
 	al_uninstall_keyboard();
 	if (front_data->evqueue != NULL) al_destroy_event_queue(front_data->evqueue);
 	if (front_data->timer.main != NULL) al_destroy_timer(front_data->timer.main);
+	if (front_data->timer.main != NULL) al_destroy_timer(front_data->timer.animations);
 
 	if(front_data->times_recorded != NULL) free(front_data->times_recorded);
 	if(front_data->keyboard_keys != NULL) free(front_data->keyboard_keys);
