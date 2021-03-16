@@ -213,7 +213,7 @@ destroyFloor(struct Floor* floor_p){
 
     destroyRobots(&(floor_p->robots));
 
-    free(floor_p->clean);
+    if (floor_p->clean != NULL) free(floor_p->clean);
 }
 
 /*

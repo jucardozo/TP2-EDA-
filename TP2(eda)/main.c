@@ -79,11 +79,6 @@ int main(int argc, char* argv[]) {
 			{
 				manageEvents(NULL, &front_data);
 			}
-
-			while (!front_data.request.exit && !front_data.request.restart)
-			{
-				manageEvents(NULL, &front_data);
-			}
 		}
 		else if (front_data.game_mode == MODE1 && !front_data.request.exit && !front_data.request.restart) {
 

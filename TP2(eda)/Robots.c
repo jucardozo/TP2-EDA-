@@ -52,7 +52,7 @@ generateRobots(struct RobotCollection* b1, int ammount, coords_t maximum) {
 
 void
 destroyRobots(struct RobotCollection* b1) {
-    free(b1->robots);
+    if(b1->robots != NULL) free(b1->robots);
     b1->robots_number = 0;
 }
 

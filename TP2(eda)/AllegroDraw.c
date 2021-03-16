@@ -13,6 +13,9 @@
   * DEFINITIONS AND MACROS
   ******************************************************************************/
 
+// We guess that 50 times will be recorded in mode 2. If there're more, the list will be expanded
+#define INITIAL_GUESS_FOR_TIMES_RECORDED	(50)
+
 #define COLOR_MODE1_BACKGROUND	(al_map_rgb(255, 255, 255))	// White
 #define COLOR_TILE_DIRTY		(al_map_rgb(131, 86, 86))	// Brown
 #define COLOR_TILE_CLEAN		(al_map_rgb(255, 255, 255))	// White
@@ -76,7 +79,7 @@ int initFrontEnd(void* front_data){
 	p2front_data->request.restart = 0;
 	p2front_data->request.lock_front = 0; // Managed in gatherBackendData
 
-	p2front_data->times_recorded = (long double*) calloc(50, sizeof(long double));	//Here is where I'm going to save the times that are entered
+	p2front_data->times_recorded = (long double*) calloc(INITIAL_GUESS_FOR_TIMES_RECORDED, sizeof(long double));	//Here is where I'm going to save the times that are entered
 
 	if (p2front_data->times_recorded == NULL) {
 
@@ -180,8 +183,8 @@ void destroyFrontEnd(FrontData * front_data){
 	if (front_data->evqueue != NULL) al_destroy_event_queue(front_data->evqueue);
 	if (front_data->timer.main != NULL) al_destroy_timer(front_data->timer.main);
 
-	free(front_data->times_recorded);
-	free(front_data->keyboard_keys);
+	if(front_data->times_recorded != NULL) free(front_data->times_recorded);
+	if(front_data->keyboard_keys != NULL) free(front_data->keyboard_keys);
 }
 
 int gatherBackendData(struct Floor* floor, void* front_data) {
@@ -290,6 +293,17 @@ static void recordDataFunction(struct Floor* floor, void* front_data) {
 		return;
 
 	FrontData* p2front_data = (FrontData*)front_data;	//This variables are defined to make the function more readable
+
+	if (p2front_data->times_count >= INITIAL_GUESS_FOR_TIMES_RECORDED - 1) {
+		long double* tmp = (long double*)realloc(p2front_data->times_recorded, p2front_data->times_count + 2);
+		if (tmp == NULL) {
+			p2front_data->request.exit = 1;
+			printf("Error reallocating memory :(\n");
+			return;
+		}
+		p2front_data->times_recorded = tmp;
+		p2front_data->times_recorded[p2front_data->times_count+1] = 0.0;
+	}
 	long double* times_recorded = p2front_data->times_recorded;
 
 	p2front_data->game_mode = floor->game_mode;
