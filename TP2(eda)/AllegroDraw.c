@@ -99,9 +99,6 @@ int initFrontEnd(void* front_data){
 }
 
 int restartFrontEnd(FrontData* fd) {
-	//al_stop_timer(fd->timer.main);
-	//al_stop_timer(fd->timer.animations);
-
 	fd->game_mode = MODE_UNSET;
 	fd->robots_used = 0;
 
@@ -188,15 +185,15 @@ void destroyFrontEnd(FrontData * front_data){
 	if (front_data == NULL)
 		return;
 
+	al_uninstall_keyboard();
+	if (front_data->timer.main != NULL) al_destroy_timer(front_data->timer.main);
+	if (front_data->timer.main != NULL) al_destroy_timer(front_data->timer.animations);
+	if (front_data->evqueue != NULL) al_destroy_event_queue(front_data->evqueue);
+
 	if (front_data->disp != NULL) al_destroy_display(front_data->disp);
 
 	if (front_data->small_font != NULL) al_destroy_font(front_data->small_font);
 	if (front_data->big_font != NULL) al_destroy_font(front_data->big_font);
-
-	al_uninstall_keyboard();
-	if (front_data->evqueue != NULL) al_destroy_event_queue(front_data->evqueue);
-	if (front_data->timer.main != NULL) al_destroy_timer(front_data->timer.main);
-	if (front_data->timer.main != NULL) al_destroy_timer(front_data->timer.animations);
 
 	if(front_data->times_recorded != NULL) free(front_data->times_recorded);
 	if(front_data->keyboard_keys != NULL) free(front_data->keyboard_keys);

@@ -2,6 +2,13 @@
 #include "AllegroDraw.h"
 #include "Backend.h"
 
+/* Create and register Allegro Timers 'main' and 'animations'. 
+ * The event queue must be created. 
+ * If a timer is already created, it will destroy it and recreate it.
+ * Returns 0 on success, 1 otherwise.
+ */
+int createAndRegisterTimers(FrontData* fd);
+
 int main(int argc, char* argv[]) {
 
 	int backend_return = 0;
@@ -18,20 +25,7 @@ int main(int argc, char* argv[]) {
 		printf("Error initializing Allegro components.\n");
 	}
 
-	// Timers and ev queue
-	front_data.timer.main = al_create_timer(2.0 / FPS);
-	if (front_data.timer.main == NULL) {
-		printf("Error creating timer.\n");
-		destroyFrontEnd(&front_data);
-		return 1;
-	}
-	front_data.timer.animations = al_create_timer(5.0 / FPS); // Change this to speed up MODE1 animations
-	if (front_data.timer.animations == NULL) {
-		printf("Error creating timer.\n");
-		destroyFrontEnd(&front_data);
-		return 1;
-	}
-
+	// ev queue
 	front_data.evqueue = al_create_event_queue();
 	if (front_data.evqueue == NULL) {
 		printf("Error creating event queue.\n");
@@ -45,16 +39,18 @@ int main(int argc, char* argv[]) {
 	// Keyboard
 	al_register_event_source(front_data.evqueue,
 							al_get_keyboard_event_source());
-	// Timers
-	al_register_event_source(front_data.evqueue,
-							al_get_timer_event_source(front_data.timer.main));
-	al_register_event_source(front_data.evqueue,
-							al_get_timer_event_source(front_data.timer.animations));
-
-	al_start_timer(front_data.timer.main);
-	al_start_timer(front_data.timer.animations);
+	
 	while (!front_data.request.exit) {
 		if(front_data.request.restart) restartFrontEnd(&front_data);
+
+		// (Re)Create and register timers. Then start them
+		if (createAndRegisterTimers(&front_data)) {
+			destroyFrontEnd(&front_data);
+			return 1;
+		}
+
+		al_start_timer(front_data.timer.main);
+		al_start_timer(front_data.timer.animations);
 
 
 		backend_return = initBackend(argc, argv, gatherBackendData, &front_data);
@@ -75,8 +71,10 @@ int main(int argc, char* argv[]) {
 
 			drawFunction(&front_data, front_data.times_count);
 
+			// Loop until user requests something
 			while (!front_data.request.exit && !front_data.request.restart)
 			{
+				al_stop_timer(front_data.timer.animations);
 				manageEvents(NULL, &front_data);
 			}
 		}
@@ -84,13 +82,50 @@ int main(int argc, char* argv[]) {
 
 			drawFinalTime(&front_data);
 
+			// Loop until user requests something
 			while (!front_data.request.exit && !front_data.request.restart)
 			{
+				al_stop_timer(front_data.timer.animations);
 				manageEvents(NULL, &front_data);
 			}
 		}
 	}
 	destroyFrontEnd(&front_data);
+
+	return 0;
+}
+
+int
+createAndRegisterTimers(FrontData * fd) {
+	if (fd == NULL) return 1;
+
+	// Destroy timers on need
+	if (fd->timer.main != NULL) {
+		al_destroy_timer(fd->timer.main);
+	}
+	if (fd->timer.animations != NULL) {
+		al_destroy_timer(fd->timer.animations);
+	}
+
+    // Creation
+	fd->timer.main = al_create_timer(2.0 / FPS);
+	if (fd->timer.main == NULL) {
+		printf("Error creating timer.\n");
+		destroyFrontEnd(fd);
+		return 1;
+	}
+	fd->timer.animations = al_create_timer(5.0 / FPS); // Change this to speed up MODE1 animations
+	if (fd->timer.animations == NULL) {
+		printf("Error creating timer.\n");
+		destroyFrontEnd(fd);
+		return 1;
+	}
+
+	// Register in event queue
+	al_register_event_source(fd->evqueue,
+							al_get_timer_event_source(fd->timer.main));
+	al_register_event_source(fd->evqueue,
+							al_get_timer_event_source(fd->timer.animations));
 
 	return 0;
 }
