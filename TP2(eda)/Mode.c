@@ -158,7 +158,7 @@ createFloor(struct Floor* floor_p, int width, int height, int robots_amount) {
     if (floor_p == NULL)
         return NULL;
 
-    if (width == 0 && height == 0)
+    if (width == 0 || height == 0)
         return NULL;
 
     if (robots_amount < 0)
