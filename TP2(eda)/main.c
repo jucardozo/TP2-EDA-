@@ -17,12 +17,14 @@ int main(int argc, char* argv[]) {
 	if (initFrontEnd(&front_data)) {
 
 		printf("Error initializing front_data\n");
+		return 1;
 	}
 
 
 	if (initAllegro(&front_data.disp, &front_data.small_font, &front_data.big_font)) {
 
 		printf("Error initializing Allegro components.\n");
+		return 1;
 	}
 
 	// ev queue
